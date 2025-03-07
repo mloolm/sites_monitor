@@ -1,6 +1,10 @@
 # server/Dockerfile
 FROM python:3.9-slim
 
+# Установка зависимостей
+RUN apt-get update && apt-get install -y default-mysql-client
+RUN rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 COPY requirements.txt .

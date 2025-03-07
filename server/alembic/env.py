@@ -12,9 +12,28 @@ from dotenv import load_dotenv
 # access to the values within the .ini file in use.
 config = context.config
 
-# Заменяем ${DATABASE_URL} на реальное значение из переменной окружения
-if config.get_main_option("sqlalchemy.url") is None:
-    config.set_main_option("sqlalchemy.url", os.getenv("DATABASE_URL"))
+# Загружаем переменные окружения из .env
+dotenv_path = os.path.join(os.getcwd(), ".env")
+if os.path.exists(dotenv_path):
+    load_dotenv(dotenv_path)
+    print("Loaded .env file:", dotenv_path, flush=True)
+else:
+    print(".env file not found!", flush=True)
+
+# Проверяем переменные окружения
+db_user = os.getenv("DB_USER")
+db_password = os.getenv("DB_PASSWORD")
+db_database = os.getenv("DB_DATABASE")
+
+print(f"DB_USER: {db_user}", flush=True)
+print(f"DB_PASSWORD: {db_password}", flush=True)
+
+print(f"DB_DATABASE: {db_database}", flush=True)
+
+url = f"mysql+pymysql://{db_user}:{db_password}@db:3306/{db_database}"
+print(f"Generated DATABASE_URL: {url}", flush=True)
+
+config.set_main_option("sqlalchemy.url", url)
 
 
 
@@ -23,10 +42,6 @@ if config.get_main_option("sqlalchemy.url") is None:
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-
-
-# Загружаем переменные окружения из .env
-load_dotenv()
 
 # Добавляем путь к проекту в PYTHONPATH
 sys.path.append(os.getcwd())

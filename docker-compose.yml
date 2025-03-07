@@ -6,10 +6,10 @@ services:
     restart: always
     container_name: mdb
     environment:
-      MYSQL_MULTIPLE_DATABASES: ${MYSQL_DATABASE},test_${MYSQL_DATABASE}
+      MYSQL_MULTIPLE_DATABASES: ${DB_DATABASE},test_${DB_DATABASE}
       MYSQL_ROOT_PASSWORD: MYSQL_RANDOM_ROOT_PASSWORD
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
 
     ports:
       - "3306:3306"
@@ -34,21 +34,17 @@ services:
       - db
       - redis
     environment:
-      DATABASE_URL: mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@db:3306/${MYSQL_DATABASE}
-      REDIS_URL: redis://redis:6379/0
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_DATABASE: ${DB_DATABASE}
       STAGE: ${STAGE}
     ports:
       - "8000:8000"
     volumes:
       - ./server:/app
+      - ./.env:/app/.env
     command: >
-      sh -c "
-      if [ ${STAGE} = 'dev' ]; then
-        uvicorn main:app --host 0.0.0.0 --port 8000 --reload;
-      else
-        uvicorn main:app --host 0.0.0.0 --port 8000;
-      fi
-      "
+      sh -c "./wait_db.sh"
 
   celery:
     container_name: mcelery
@@ -61,10 +57,13 @@ services:
       - backend
       - redis
     environment:
-      DATABASE_URL: mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@db:3306/${MYSQL_DATABASE}
-      REDIS_URL: redis://redis:6379/0
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_DATABASE: ${DB_DATABASE}
+      STAGE: ${STAGE}
     volumes:
       - ./server:/app
+      - ./.env:/app/.env
     command: ["celery", "-A", "tasks.worker", "worker", "--loglevel=info"]
 
   frontend:
