@@ -7,7 +7,7 @@ from schemas.site import SiteCreate, Site as SiteSchema
 
 router = APIRouter()
 
-@router.post("/sites/", response_model=SiteSchema)
+@router.post("/add-site/", response_model=SiteSchema)
 def create_new_site(site: SiteCreate, db: Session = Depends(get_db)):
     return create_site(db=db, url=site.url)
 

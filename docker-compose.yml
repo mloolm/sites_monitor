@@ -4,6 +4,7 @@ services:
   db:
     image: mysql:8
     restart: always
+    container_name: mdb
     environment:
       MYSQL_MULTIPLE_DATABASES: ${MYSQL_DATABASE},test_${MYSQL_DATABASE}
       MYSQL_ROOT_PASSWORD: MYSQL_RANDOM_ROOT_PASSWORD
@@ -23,6 +24,7 @@ services:
       - "6379:6379"
 
   backend:
+    container_name: mback
     build:
       context: ./server
       args:
@@ -49,6 +51,7 @@ services:
       "
 
   celery:
+    container_name: mcelery
     build:
       context: ./server
       args:
@@ -65,6 +68,7 @@ services:
     command: ["celery", "-A", "tasks.worker", "worker", "--loglevel=info"]
 
   frontend:
+    container_name: mfront
     build:
       context: ./client
       args:
@@ -86,6 +90,17 @@ services:
       "
     depends_on:
       - backend
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: mphpmyadmin
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: password
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
 
 volumes:
   mysql_data:
