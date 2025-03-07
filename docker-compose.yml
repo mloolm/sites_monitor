@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8
+    restart: always
+    environment:
+      MYSQL_MULTIPLE_DATABASES: ${MYSQL_DATABASE},test_${MYSQL_DATABASE}
+      MYSQL_ROOT_PASSWORD: MYSQL_RANDOM_ROOT_PASSWORD
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./init-scripts:/docker-entrypoint-initdb.d
+      - mysql_data:/var/lib/mysql
+
+  redis:
+    image: redis:7
+    restart: always
+    ports:
+      - "6379:6379"
+
+  backend:
+    build:
+      context: ./server
+      args:
+        STAGE: ${STAGE}
+    restart: always
+    depends_on:
+      - db
+      - redis
+    environment:
+      DATABASE_URL: mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@db:3306/${MYSQL_DATABASE}
+      REDIS_URL: redis://redis:6379/0
+      STAGE: ${STAGE}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./server:/app
+    command: >
+      sh -c "
+      if [ ${STAGE} = 'dev' ]; then
+        uvicorn main:app --host 0.0.0.0 --port 8000 --reload;
+      else
+        uvicorn main:app --host 0.0.0.0 --port 8000;
+      fi
+      "
+
+  celery:
+    build:
+      context: ./server
+      args:
+        STAGE: ${STAGE}
+    restart: always
+    depends_on:
+      - backend
+      - redis
+    environment:
+      DATABASE_URL: mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@db:3306/${MYSQL_DATABASE}
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - ./server:/app
+    command: ["celery", "-A", "tasks.worker", "worker", "--loglevel=info"]
+
+  frontend:
+    build:
+      context: ./client
+      args:
+        STAGE: ${STAGE}
+    ports:
+      - "5173:5173"
+    environment:
+      STAGE: ${STAGE}
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    command: >
+      sh -c "
+      if [ ${STAGE} = 'dev' ]; then
+        npm run dev;
+      else
+        npm run start;
+      fi
+      "
+    depends_on:
+      - backend
+
+volumes:
+  mysql_data:

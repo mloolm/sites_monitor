@@ -1,0 +1,36 @@
+{
+  "name": "client",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "start": "vite preview",
+    "prod": "npm run build && npm run start",
+    "lint": "eslint . --ext .js,.vue",
+    "format": "prettier --write src/**/*.{js,vue}"
+  },
+  "dependencies": {
+    "vue": "^3.3.4",
+    "vue-router": "^4.2.5",
+    "pinia": "^2.1.7",
+    "axios": "^1.6.2",
+    "sass": "^1.69.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.2.3",
+    "vite": "^4.5.0",
+    "eslint": "^8.56.0",
+    "eslint-plugin-vue": "^9.20.0",
+    "prettier": "^3.2.4",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.31",
+    "@vue/tsconfig": "^0.4.0",
+    "typescript": "^5.2.2"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "IE 11"
+  ]
+}
