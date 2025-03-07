@@ -1,52 +1,39 @@
-<!-- client/src/components/SiteList.vue -->
 <template>
-  <div>
-    <table>
-      <thead>
-        <tr>
-          <th>URL</th>
-          <th>Status</th>
-          <th>Last Checked</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="site in sites" :key="site.id">
-          <td>{{ site.url }}</td>
-          <td :class="statusClass(site.is_online)">
-            {{ site.is_online ? 'Online' : 'Offline' }}
-          </td>
-          <td>{{ site.last_checked }}</td>
-        </tr>
-      </tbody>
-    </table>
+  <div class="site-list">
+    <h2>Список сайтов</h2>
+    <ul>
+      <li v-for="site in sites" :key="site.id">
+        {{ site.url }}
+      </li>
+    </ul>
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
-export default {
-  data() {
-    return {
-      sites: []
-    };
-  },
-  methods: {
-    async fetchSites() {
-      const response = await axios.get('http://localhost:8000/api/sites/');
-      this.sites = response.data;
-    },
-    statusClass(isOnline) {
-      return { 'status-online': isOnline, 'status-offline': !isOnline };
-    }
-  },
-  mounted() {
-    this.fetchSites();
-  }
-};
+const sites = ref([]);
+
+onMounted(async () => {
+  try {
+  const response = await axios.get('/api/sites/'); // Без полного URL!
+  sites.value = response.data;
+} catch (error) {
+  console.error('Ошибка при загрузке сайтов:', error);
+}
+});
 </script>
 
-<style>
-.status-online { color: green; }
-.status-offline { color: red; }
+<style scoped>
+.site-list {
+  padding: 20px;
+}
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+li {
+  margin: 5px 0;
+}
 </style>

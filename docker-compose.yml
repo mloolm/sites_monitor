@@ -70,23 +70,16 @@ services:
     container_name: mfront
     build:
       context: ./client
-      args:
-        STAGE: ${STAGE}
+      target: ${STAGE:-development}  # Использует нужный этап сборки
     ports:
-      - "5173:5173"
+      - "5173:5173"  # Только для dev
+      - "80:80"      # Только для prod
     environment:
       STAGE: ${STAGE}
+      VITE_API_URL: http://backend:8000
     volumes:
       - ./client:/app
       - /app/node_modules
-    command: >
-      sh -c "
-      if [ ${STAGE} = 'dev' ]; then
-        npm run dev;
-      else
-        npm run start;
-      fi
-      "
     depends_on:
       - backend
 

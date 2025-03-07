@@ -24,14 +24,8 @@ else:
 db_user = os.getenv("DB_USER")
 db_password = os.getenv("DB_PASSWORD")
 db_database = os.getenv("DB_DATABASE")
-
-print(f"DB_USER: {db_user}", flush=True)
-print(f"DB_PASSWORD: {db_password}", flush=True)
-
-print(f"DB_DATABASE: {db_database}", flush=True)
-
 url = f"mysql+pymysql://{db_user}:{db_password}@db:3306/{db_database}"
-print(f"Generated DATABASE_URL: {url}", flush=True)
+#print(f"Generated DATABASE_URL: {url}", flush=True)
 
 config.set_main_option("sqlalchemy.url", url)
 

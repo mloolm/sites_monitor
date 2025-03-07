@@ -12,3 +12,6 @@ def create_site(db: Session, url: str):
     db.commit()
     db.refresh(db_site)
     return db_site
+
+def get_sites(db: Session):
+    return db.query(Site).all()

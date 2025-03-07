@@ -1,12 +1,23 @@
 # main.py
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from core.config import settings  # Импортируем настройки, если нужно
+
+
 
 # Создаём экземпляр FastAPI
 app = FastAPI(
     title="Site Monitoring API",
     description="API для мониторинга сайтов и SSL-сертификатов",
     version="1.0.0",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Разрешаем все источники
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Подключаем маршруты
