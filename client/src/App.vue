@@ -1,14 +1,11 @@
 <template>
   <div id="app">
-    <h1>Мониторинг сайтов</h1>
-    <AddSiteForm />
-    <SiteList />
+    <router-view />
   </div>
 </template>
 
 <script setup>
-import AddSiteForm from './components/AddSiteForm.vue';
-import SiteList from './components/SiteList.vue';
+// Убираем импорт AddSiteForm и SiteList, так как они теперь будут загружаться через маршрутизацию
 </script>
 
 <style>

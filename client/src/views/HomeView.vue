@@ -1,11 +1,5 @@
 <template>
   <div>
-    <AddSiteForm />
-    <SiteList />
+    <h1>Home</h1>
   </div>
 </template>
-
-<script setup>
-import AddSiteForm from '../components/AddSiteForm.vue';
-import SiteList from '../components/SiteList.vue';
-</script>

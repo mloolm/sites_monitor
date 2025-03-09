@@ -1,6 +1,40 @@
-import axios from 'axios';
+// src/api.js
+import axios from "axios";
 
-export const apiClient = axios.create({
-  baseURL: process.env.VITE_API_URL || 'http://backend:8000',
-  withCredentials: true,
+const apiClient = axios.create({
+  baseURL: "/api", // Используем прокси
+  withCredentials: false, // Если не используете cookies
+  headers: {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+  },
 });
+
+export default {
+  login(username, password) {
+    return apiClient.post("/token", {
+      username,
+      password,
+    });
+  },
+  getUserData(token) {
+    return apiClient.get("/user-data", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  },
+  getSites(token) {
+    return apiClient.get("/sites/", {
+      headers: {Authorization: `Bearer ${token}`},
+    });
+  },
+
+  addSite(token, url) {
+    return apiClient.post(
+        '/add-site',
+        { url: url },
+        {
+            headers: { Authorization: `Bearer ${token}` } // Заголовки
+        }
+    );
+  }
+};

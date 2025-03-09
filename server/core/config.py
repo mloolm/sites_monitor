@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     DB_USER: str
     DB_PASSWORD: str
     STAGE: str
+    SECRET_KEY: str
 
     class Config:
         env_file = "core/.env"
@@ -17,6 +18,18 @@ class Settings(BaseSettings):
     @property
     def REDIS_URL(self) -> str:
         return f"redis://redis:6379/0"
+
+    @property
+    def ALGORITHM(self) -> str:
+        return "HS256"
+
+    @property
+    def INTERVAL(self) -> int:
+        return 10
+
+    @property
+    def ACCESS_TOKEN_EXPIRE_MINUTES(self) -> int:
+        return 60
 
 settings = Settings()
 

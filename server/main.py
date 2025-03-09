@@ -1,9 +1,16 @@
 # main.py
-from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from core.config import settings  # Импортируем настройки, если нужно
+from core.config import settings
+from fastapi import FastAPI, Depends, HTTPException, status, APIRouter
+from fastapi.security import OAuth2PasswordRequestForm
+from api.auth import oauth2_scheme
+from pydantic import BaseModel
+from db.session import get_db, Base, engine
+from db.crud import authenticate_user, create_access_token
+from sqlalchemy.orm import Session
 
-
+# Создаем таблицы в базе данных при запуске приложения
+Base.metadata.create_all(bind=engine)
 
 # Создаём экземпляр FastAPI
 app = FastAPI(
@@ -28,3 +35,26 @@ app.include_router(api_router, prefix="/api")
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the Site Monitoring API"}
+
+class TokenRequest(BaseModel):
+    username: str
+    password: str
+
+
+@app.post("/api/token")
+async def login(
+        request: TokenRequest,
+        db: Session = Depends(get_db)
+):
+    user = authenticate_user(db, request.username, request.password)
+    if not user:
+        raise HTTPException(
+            status_code=401,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    access_token = create_access_token(
+        data={"sub": user.login}
+    )
+    return {"access_token": access_token, "token_type": "bearer"}

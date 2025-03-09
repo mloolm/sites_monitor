@@ -2,7 +2,7 @@
   <div class="site-list">
     <h2>Список сайтов</h2>
     <ul>
-      <li v-for="site in sites" :key="site.id">
+      <li v-for="site in siteStore.sites" :key="site.id">
         {{ site.url }}
       </li>
     </ul>
@@ -10,18 +10,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import axios from 'axios';
+import {onMounted} from 'vue';
+import {useSiteStore} from '../stores/siteStore';
 
-const sites = ref([]);
+const siteStore = useSiteStore(); // Получаем доступ к хранилищу
+const token = localStorage.getItem("token");
 
 onMounted(async () => {
-  try {
-  const response = await axios.get('/api/sites/'); // Без полного URL!
-  sites.value = response.data;
-} catch (error) {
-  console.error('Ошибка при загрузке сайтов:', error);
-}
+  await siteStore.fetchSites(token); // Загружаем список сайтов при монтировании
 });
 </script>
 
@@ -29,10 +25,12 @@ onMounted(async () => {
 .site-list {
   padding: 20px;
 }
+
 ul {
   list-style-type: none;
   padding: 0;
 }
+
 li {
   margin: 5px 0;
 }

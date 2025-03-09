@@ -11,6 +11,9 @@ requests
 python-dotenv
 loguru
 pydantic-settings
+python-jose[cryptography]
+passlib[bcrypt]
+python-dotenv
 
 # Для работы с SSL сертификатами
 cryptography

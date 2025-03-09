@@ -15,15 +15,21 @@
 
 <script setup>
 import { ref } from 'vue';
-import axios from 'axios';
+import api from "../api";
+import { useSiteStore } from '../stores/siteStore'; // Импортируем хранилище
 
 const newSiteUrl = ref('');
+const token = localStorage.getItem("token");
+const siteStore = useSiteStore(); // Получаем доступ к хранилищу
 
 async function addSite() {
   try {
-    await axios.post('/api/add-site', { url: newSiteUrl.value });
+    await api.addSite(token, newSiteUrl.value); // Добавляем сайт через API
     newSiteUrl.value = ''; // Очистить поле ввода
     alert('Сайт успешно добавлен!');
+
+    // Обновляем список сайтов в хранилище
+    await siteStore.fetchSites(token);
   } catch (error) {
     console.error('Ошибка при добавлении сайта:', error);
     alert('Не удалось добавить сайт.');
@@ -35,11 +41,13 @@ async function addSite() {
 .add-site-form {
   padding: 20px;
 }
+
 input {
   padding: 10px;
   width: 300px;
   margin-right: 10px;
 }
+
 button {
   padding: 10px 20px;
 }
