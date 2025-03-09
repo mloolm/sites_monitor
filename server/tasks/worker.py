@@ -2,6 +2,7 @@
 from celery import Celery
 from core.config import settings
 from .monitor import check_site_availability
+from .ssl_checker import check_ssl_certificates
 
 celery_app = Celery(
     "worker",
@@ -18,7 +19,13 @@ celery_app.conf.update(
     beat_schedule={
         "check-site-availability": {
             "task": "tasks.monitor.check_site_availability",
-            "schedule": settings.INTERVAL * 60,
+            "schedule": settings.INTERVAL * 60,  # Частота проверки доступности
+        },
+        "check-ssl-certificates": {
+            "task": "tasks.ssl_checker.check_ssl_certificates",
+            "schedule": 86400.0,  # 24 часа = 86400 секунд
+
         },
     }
 )
+

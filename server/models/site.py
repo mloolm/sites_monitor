@@ -15,3 +15,6 @@ class Site(Base):
 
     # Связь с таблицей Monitor
     monitor = relationship("Monitor", back_populates="owner", cascade="all, delete-orphan")
+
+    # Связь с таблицей SSL Monitor
+    ssl_monitor = relationship("SSLCertificate", back_populates="owner", cascade="all, delete-orphan")

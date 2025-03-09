@@ -2,5 +2,6 @@
 from .site import Site
 from .user import User
 from .monitor import Monitor
+from .ssl_certificate import SSLCertificate
 # Экспортируем все модели
-__all__ = ["Site","User", "Monitor"]
+__all__ = ["Site","User", "Monitor", "SSLCertificate"]

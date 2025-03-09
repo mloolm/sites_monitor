@@ -15,6 +15,9 @@ delete_user:
 list_users:
 	docker exec -it $(CONTAINER_NAME) python manage_users.py list
 
+migrate:
+	docker exec -it $(CONTAINER_NAME) alembic revision --autogenerate -m "Check"
+	docker exec -it $(CONTAINER_NAME) alembic upgrade head
 
 
 # Помощь
