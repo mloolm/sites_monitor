@@ -2,3 +2,4 @@
 .idea
 client/node_modules/*
 server/celerybeat-schedule
+client/package-lock.json

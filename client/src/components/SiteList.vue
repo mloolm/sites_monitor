@@ -1,12 +1,18 @@
 <template>
-  <div class="site-list">
-    <h2>Список сайтов</h2>
-    <ul>
-      <li v-for="site in siteStore.sites" :key="site.id">
-        {{ site.url }}
-      </li>
-    </ul>
-  </div>
+  <v-app>
+    <v-main>
+      <v-container>
+        <v-card>
+          <v-card-title>Список сайтов</v-card-title>
+          <v-list>
+            <v-list-item v-for="site in siteStore.sites" :key="site.id">
+              <v-list-item-title>{{ site.url }}</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-card>
+      </v-container>
+    </v-main>
+  </v-app>
 </template>
 
 <script setup>
