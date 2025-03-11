@@ -2,8 +2,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from db.session import get_db
-from db.crud import create_site, get_site, get_sites, get_user_by_login
-from schemas.site import SiteCreate, Site as SiteSchema
+from db.crud import create_site, get_site, get_sites, get_user_by_login, delete_site
+from schemas.site import SiteCreate, SiteDelete, Site as SiteSchema
 from schemas.user import User as UserSchema
 from typing import List
 from .auth import get_current_user
@@ -48,3 +48,9 @@ def read_site(site_id: int, db: Session = Depends(get_db),current_user: str = De
         raise HTTPException(status_code=404, detail="Site not found")
     return db_site
 
+@router.post("/delete-site")
+def del_site(site: SiteDelete, db: Session = Depends(get_db),current_user: str = Depends(get_current_user)):
+    res = delete_site(db, user=current_user, site_id=site.site_id)
+    if not res:
+        raise HTTPException(status_code=404, detail="Site not found")
+    return True

@@ -46,3 +46,11 @@ def create_site(db: Session, user: User, url: str):
 
 def get_sites(db: Session, user: User):
     return db.query(Site).filter(Site.user_id == user.id)
+
+def delete_site(db: Session, user: User, site_id: int):
+    site = get_site(db, user, site_id)
+    if site:
+        db.delete(site)  # Удалить
+        db.commit()  # Подтвердить изменения
+        return True
+    return False  # Если сайт не найден

@@ -1,26 +1,39 @@
 <template>
-  <div class="add-site-form">
-    <h2>Добавить сайт</h2>
-    <form @submit.prevent="addSite">
-      <input
-        type="text"
+  <v-container class="add-site-form">
+    <h2 class="text-h4 mb-4">Добавить сайт</h2>
+    <v-form @submit.prevent="addSite">
+      <v-text-field
         v-model="newSiteUrl"
-        placeholder="Введите URL сайта"
+        label="Введите URL сайта"
+        placeholder="https://example.com"
         required
-      />
-      <button type="submit">Добавить</button>
-    </form>
-  </div>
+        :rules="[urlRules.required, urlRules.isValidUrl]"
+        variant="outlined"
+        clearable
+      ></v-text-field>
+
+      <v-btn type="submit" color="primary" :disabled="!newSiteUrl">Добавить</v-btn>
+    </v-form>
+  </v-container>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import {ref} from 'vue';
 import api from "../api";
-import { useSiteStore } from '../stores/siteStore'; // Импортируем хранилище
+import {useSiteStore} from '../stores/siteStore'; // Импортируем хранилище
 
 const newSiteUrl = ref('');
 const token = localStorage.getItem("token");
 const siteStore = useSiteStore(); // Получаем доступ к хранилищу
+
+// Валидация URL
+const urlRules = {
+  required: (value) => !!value || 'URL обязателен',
+  isValidUrl: (value) => {
+    const urlPattern = /^(https?:\/\/)?([\w-]+\.)+[\w-]{2,}(\/.*)*$/;
+    return urlPattern.test(value) || 'Некорректный URL';
+  },
+};
 
 async function addSite() {
   try {
@@ -39,16 +52,7 @@ async function addSite() {
 
 <style scoped>
 .add-site-form {
-  padding: 20px;
-}
-
-input {
-  padding: 10px;
-  width: 300px;
-  margin-right: 10px;
-}
-
-button {
-  padding: 10px 20px;
+  max-width: 500px;
+  margin: 0 auto;
 }
 </style>

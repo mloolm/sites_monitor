@@ -1,14 +1,14 @@
 // vite.config.js
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
-import { createVuePlugin } from 'vite-plugin-vuetify';
+import vuetify from 'vite-plugin-vuetify';
 
 
 
 export default defineConfig({
   plugins: [
     vue(),
-    createVuePlugin({ autoImport: true }),
+    vuetify({ autoImport: true })
   ],
   server: {
     host: '0.0.0.0',

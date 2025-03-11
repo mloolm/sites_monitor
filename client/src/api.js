@@ -36,5 +36,17 @@ export default {
             headers: { Authorization: `Bearer ${token}` } // Заголовки
         }
     );
+  },
+
+  deleteSite(token, id){
+    return apiClient.post(
+        '/delete-site',
+        { site_id: id },
+        {
+            headers: { Authorization: `Bearer ${token}` } // Заголовки
+        }
+    );
+
   }
+
 };
