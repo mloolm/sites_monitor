@@ -1,5 +1,6 @@
 # server/core/config.py
 from pydantic_settings import BaseSettings  # Используем новый импорт
+from typing import Optional
 
 class Settings(BaseSettings):
     DB_DATABASE: str
@@ -7,6 +8,8 @@ class Settings(BaseSettings):
     DB_PASSWORD: str
     STAGE: str
     SECRET_KEY: str
+
+    TELEGRAM_BOT_TOKEN: Optional[str] = None
 
     class Config:
         env_file = "core/.env"

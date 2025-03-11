@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from db.session import get_db, Base, engine
 from db.crud import authenticate_user, create_access_token
 from sqlalchemy.orm import Session
+from fastapi import Request
 
 # Создаем таблицы в базе данных при запуске приложения
 Base.metadata.create_all(bind=engine)
@@ -40,7 +41,6 @@ class TokenRequest(BaseModel):
     username: str
     password: str
 
-
 @app.post("/api/token")
 async def login(
         request: TokenRequest,
@@ -58,3 +58,20 @@ async def login(
         data={"sub": user.login}
     )
     return {"access_token": access_token, "token_type": "bearer"}
+
+
+@app.post("/telegram/webhook")
+async def telegram_webhook(request: Request, db: Session = Depends(get_db)):
+
+
+    """
+    Роут для приема вебхуков от Telegram.
+    """
+    # Получаем данные из запроса
+    data = await request.json()
+
+    # Передаем данные в метод обработки вебхука
+    from services.notification_providers.telegram import handle_telegram_webhook
+    response = handle_telegram_webhook(db, data)
+
+    return response

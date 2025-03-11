@@ -7,6 +7,10 @@ from schemas.site import SiteCreate, SiteDelete, Site as SiteSchema
 from schemas.user import User as UserSchema
 from typing import List
 from .auth import get_current_user
+from models.notification import Notification
+from schemas.notification import NotificationCreate, NotificationResponse
+from services.notification_providers.telegram import send_telegram_notification
+
 
 router = APIRouter(
     dependencies=[Depends(get_current_user)]  # Применяем ко всем маршрутам
@@ -54,3 +58,20 @@ def del_site(site: SiteDelete, db: Session = Depends(get_db),current_user: str =
     if not res:
         raise HTTPException(status_code=404, detail="Site not found")
     return True
+
+
+
+
+@router.post("/notifications-test", response_model=NotificationResponse)
+def create_notification(notification: NotificationCreate, db: Session = Depends(get_db)):
+    db_notification = Notification(**notification.dict())
+    db.add(db_notification)
+    db.commit()
+    db.refresh(db_notification)
+
+    # Отправка через Telegram, если указаны параметры
+    from config import settings
+    if settings.TELEGRAM_BOT_TOKEN:
+        send_telegram_notification(notification)
+
+    return db_notification
