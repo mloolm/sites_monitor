@@ -9,6 +9,8 @@ from db.session import get_db, Base, engine
 from db.crud import authenticate_user, create_access_token
 from sqlalchemy.orm import Session
 from fastapi import Request
+from models.notification_auth import NotificationAuth
+from services.notification_providers.telegram import handle_telegram_webhook
 
 # Создаем таблицы в базе данных при запуске приложения
 Base.metadata.create_all(bind=engine)
@@ -60,18 +62,30 @@ async def login(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@app.post("/telegram/webhook")
-async def telegram_webhook(request: Request, db: Session = Depends(get_db)):
-
-
+@app.post("/telegram/webhook/{webhook_hash}")
+async def telegram_webhook(
+        webhook_hash: str,  # Параметр пути для хэша
+        request: Request,
+        db: Session = Depends(get_db)
+):
     """
     Роут для приема вебхуков от Telegram.
+    Проверяет, соответствует ли переданный hash ожидаемому значению.
     """
+    # Получаем ожидаемый hash
+    expected_hash = NotificationAuth.get_telegram_webhook_url_hash()
+
+    if not expected_hash:
+        raise HTTPException(status_code=404, detail="Page not found")
+
+    # Проверяем, совпадает ли переданный hash с ожидаемым
+    if webhook_hash != expected_hash:
+        raise HTTPException(status_code=404, detail="Page not found")
+
     # Получаем данные из запроса
     data = await request.json()
 
     # Передаем данные в метод обработки вебхука
-    from services.notification_providers.telegram import handle_telegram_webhook
     response = handle_telegram_webhook(db, data)
 
     return response

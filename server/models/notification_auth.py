@@ -7,6 +7,8 @@ from core.config import settings
 from db.session import Base
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, func, Enum, ForeignKey
 from sqlalchemy.orm import relationship
+import hashlib
+
 
 # Настроим соединение с Redis
 redis_client = redis.from_url(settings.REDIS_URL, decode_responses=True)
@@ -48,3 +50,14 @@ class NotificationAuth(Base):
             return True
 
         return False
+
+    @classmethod
+    def get_telegram_webhook_url_hash(cls):
+        if not settings.TELEGRAM_BOT_TOKEN:
+            return False
+
+        hash_object = hashlib.sha256(settings.TELEGRAM_BOT_TOKEN.encode('utf-8'))
+        hash_hex = hash_object.hexdigest()
+
+        return hash_hex
+
