@@ -1,16 +1,16 @@
 <template>
   <v-container>
     <v-card class="pa-4">
-      <v-card-title>Настройки уведомлений</v-card-title>
+      <v-card-title>Notification Settings</v-card-title>
 
-      <!-- Раздел подключения Telegram -->
-      <v-card-subtitle>Подключение Telegram</v-card-subtitle>
+      <!-- Telegram -->
+      <v-card-subtitle>Telegram</v-card-subtitle>
       <v-card-text>
         <v-row align="center">
           <v-col cols="12" md="6">
             <v-text-field
               v-model="telegramToken"
-              label="Токен Telegram"
+              label="Code for Telegram"
               readonly
               outlined
               dense
@@ -24,21 +24,94 @@
               @click="fetchTelegramToken"
               :disabled="isLoading"
             >
-              Получить токен
+              Get code
             </v-btn>
           </v-col>
         </v-row>
       </v-card-text>
     </v-card>
   </v-container>
+
+  <v-container>
+    <v-row align="center">
+      <v-col cols="12">
+        <v-btn
+        color="primary"
+        @click="sendTestMessage"
+        :disabled="isLoading"
+        >
+          Send test message
+        </v-btn>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
-<script>
+<script setup>
 import { ref, onMounted } from 'vue';
-import { useSiteStore } from '../stores/siteStore';
 import api from '../api';
+import {useRouter} from "vue-router";
+const router = useRouter();
+const message = ref("");
+const telegramToken = ref(""); // Переменная для хранения кода Telegram
+const isLoading = ref(false); // Для отображения состояния загрузки
+const errorMessage = ref(""); // Для отображения ошибок
 
 const token = localStorage.getItem("token");
+
+function sendTestMessage(){
+  const message = 'Test message from site monitor!'
+  api.sendNotyMessage(token, message)
+}
+
+// Функция для получения кода Telegram
+function fetchTelegramToken() {
+  isLoading.value = true; // Начинаем загрузку
+  errorMessage.value = ""; // Очищаем сообщения об ошибках
+
+  try {
+    api.getTelegramAuthCode(token).then((res) => {
+      console.log(res.data);
+      telegramToken.value = '/auth ' + res.data; // Обновляем значение telegramToken
+    }).catch((err) => {
+      console.error("Error getting auth code:", err);
+      errorMessage.value = "Failed to fetch the code. Please try again.";
+    }).finally(() => {
+      isLoading.value = false; // Завершаем загрузку
+    });
+  } catch (err) {
+    console.error("Error getting auth code:", err);
+    errorMessage.value = "An unexpected error occurred.";
+    isLoading.value = false; // Завершаем загрузку
+  }
+}
+
+
+
+ onMounted(async () => {
+
+  if (!token) {
+    router.push("/login");
+    return;
+  }
+
+
+  try {
+    const response = await api.getUserData(token);
+  } catch (err) {
+    console.error("Ошибка при получении данных пользователя:", err);
+    router.push("/login");
+  }
+
+  try {
+    const providers = await api.getNotificationData(token);
+    console.log(providers)
+
+
+  } catch (err) {
+    console.error("Ошибка при получении данных о провайдерах уведомлений:", err);
+  }
+});
 
 </script>
 

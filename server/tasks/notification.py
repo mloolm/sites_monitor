@@ -10,6 +10,6 @@ def process_pending_notifications():
 
 
     for notification in notifications:
-        send_message(db, )
+        send_message(db, notification)
 
     db.close()

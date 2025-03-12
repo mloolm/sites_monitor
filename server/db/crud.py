@@ -1,6 +1,7 @@
 from models.site import Site
 from sqlalchemy.orm import Session
 from models.user import User
+from models.notification_auth import NotificationAuth
 from datetime import datetime, timedelta
 from jose import jwt
 from typing import Optional
@@ -54,3 +55,7 @@ def delete_site(db: Session, user: User, site_id: int):
         db.commit()  # Подтвердить изменения
         return True
     return False  # Если сайт не найден
+
+def get_user_noty_providers(db: Session, user: User):
+    providers = db.query(NotificationAuth).filter(NotificationAuth.user_id == user.id).all()
+    return providers

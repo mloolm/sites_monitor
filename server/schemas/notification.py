@@ -12,3 +12,7 @@ class NotificationResponse(NotificationCreate):
 
     class Config:
         orm_mode = True
+
+
+class SendMessage(BaseModel):
+    message: str

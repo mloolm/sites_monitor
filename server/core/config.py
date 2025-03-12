@@ -32,7 +32,7 @@ class Settings(BaseSettings):
 
     @property
     def ACCESS_TOKEN_EXPIRE_MINUTES(self) -> int:
-        return 60
+        return 60*12
 
 settings = Settings()
 

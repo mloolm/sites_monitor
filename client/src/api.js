@@ -46,6 +46,29 @@ export default {
             headers: { Authorization: `Bearer ${token}` } // Заголовки
         }
     );
+  },
+
+  getNotificationData(token){
+    return apiClient.get("/user-noty-providers", {
+      headers: {Authorization: `Bearer ${token}`},
+    });
+  },
+
+  getTelegramAuthCode(token){
+    return apiClient.get("/get-telegram-auth-code", {
+      headers: {Authorization: `Bearer ${token}`},
+    });
+  },
+
+  sendNotyMessage(token, message)
+  {
+        return apiClient.post(
+        '/noty-message',
+        { message: message},
+        {
+            headers: { Authorization: `Bearer ${token}` } // Заголовки
+        }
+    );
 
   }
 

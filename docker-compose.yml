@@ -1,4 +1,4 @@
-version: '3.8'
+#version: '3.8'
 
 services:
   db:
@@ -40,6 +40,7 @@ services:
       DB_DATABASE: ${DB_DATABASE}
       STAGE: ${STAGE}
       SECRET_KEY: ${SECRET_KEY}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
     ports:
       - "8000:8000"
     volumes:
@@ -64,6 +65,7 @@ services:
       DB_DATABASE: ${DB_DATABASE}
       STAGE: ${STAGE}
       SECRET_KEY: ${SECRET_KEY}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
     volumes:
       - ./server:/app
       - ./.env:/app/.env
@@ -85,6 +87,7 @@ services:
       DB_DATABASE: ${DB_DATABASE}
       STAGE: ${STAGE}
       SECRET_KEY: ${SECRET_KEY}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
     volumes:
       - ./server:/app
       - ./.env:/app/.env

@@ -23,6 +23,8 @@ class User(Base):
     # Связь с таблицей sites
     sites = relationship("Site", back_populates="owner")
 
+    notification_auth = relationship("NotificationAuth", back_populates="owner")
+
     # Методы для работы с паролями
     def verify_password(self, password: str) -> bool:
         return pwd_context.verify(password, self.hashed_password)

@@ -6,12 +6,14 @@ from sqlalchemy.orm import Session
 
 
 def send_telegram_notification(db: Session, notification: Notification):
-    chat_id = db.query(NotificationAuth).filter(
+    provider = db.query(NotificationAuth).filter(
         NotificationAuth.user_id == notification.user_id,
         NotificationAuth.method == 'telegram').first()
 
-    if not chat_id:
+    if not provider:
         return True
+
+    chat_id = provider.endpoint
 
     TELEGRAM_BOT_TOKEN = settings.TELEGRAM_BOT_TOKEN
 
