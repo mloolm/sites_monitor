@@ -1,9 +1,10 @@
 <template>
-  <div>
-    <h1>Site Details</h1>
-    <p>Site ID: {{ siteId }}</p>
+  <v-container>
+    <h3>Site Details</h3>
+    <p><b>{{siteInfo.url}}</b></p>
+
     <SiteAvailabilityChart :availabilityData="availabilityData" />
-  </div>
+  </v-container>
 </template>
 
 <script setup>

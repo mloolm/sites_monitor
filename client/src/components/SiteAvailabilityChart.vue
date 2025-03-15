@@ -1,9 +1,7 @@
 <template>
-  <v-container>
-    <h4>Chart</h4>
+  <div class="site-chart">
     <Line :chartData="chartData" :chartOptions="chartOptions" />
-
-  </v-container>
+  </div>
 </template>
 
 <script setup>
@@ -35,7 +33,7 @@ const chartOptions = {
       min: 0,
       max: 100,
       ticks: {
-        stepSize: 50,
+        stepSize: 100,
       },
     },
   },
@@ -44,13 +42,18 @@ const chartOptions = {
       callbacks: {
         label: function(tooltipItem) {
           const index = tooltipItem.dataIndex;
-          const availability = tooltipItem.dataset.data[index];
-          const responseCode = props.availabilityData[index].code;
-          const RespTime =  props.availabilityData[index].response_time_ms;
+          const availabilityValue = tooltipItem.dataset.data[index];
+          const availability = availabilityValue > 0 ? 'online' : 'offline';
+
+          const responseCode_val = props.availabilityData[index].code;
+          const responseCode = ((typeof responseCode_val=='undefined') || (responseCode_val === null)) ? '-': responseCode_val
+
+          const RespTime_val =  props.availabilityData[index].response_time_ms;
+          const RespTime = ((RespTime_val === null) || (RespTime_val === 0 )) ? '-': RespTime_val + 'ms'
           return [
-            `Availability: ${availability}%`,
+            `Status: ${availability}`,
             `Response Code: ${responseCode}`,
-            `Response Time: ${RespTime}ms`
+            `Response Time: ${RespTime}`
           ];
         }
       }

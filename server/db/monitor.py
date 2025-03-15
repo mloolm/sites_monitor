@@ -48,7 +48,7 @@ def get_site_data(db: Session, site_id:int):
     monitor_records = (
         db.query(Monitor)
         .filter(Monitor.site_id == site_id, Monitor.check_dt >= last_week)
-        .order_by(desc(Monitor.check_dt))  # Сортируем по check_dt от нового к старому
+        .order_by(Monitor.check_dt)  # Сортируем по check_dt от нового к старому
         .all()
     )
 
