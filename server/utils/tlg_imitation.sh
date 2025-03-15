@@ -24,7 +24,7 @@ PAYLOAD='{
       "type": "private"
     },
     "date": 1698765432,
-    "text": "/auth kBUF7S"
+    "text": "/auth nmznno"
   }
 }'
 

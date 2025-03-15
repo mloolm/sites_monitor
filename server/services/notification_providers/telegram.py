@@ -9,6 +9,23 @@ from db.notifications import set_provider
 from models.user import User
 
 
+def send_message(chat_id, message):
+    TELEGRAM_BOT_TOKEN = settings.TELEGRAM_BOT_TOKEN
+
+    if not TELEGRAM_BOT_TOKEN:
+        return True
+
+    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+
+
+    data = {
+        "chat_id": chat_id,
+        "text": message,
+        "parse_mode": "HTML"
+    }
+    response = requests.post(url, json=data)
+    return response.json()
+
 def send_telegram_notification(db: Session, notification: Notification):
     provider = db.query(NotificationAuth).filter(
         NotificationAuth.user_id == notification.user_id,
@@ -19,21 +36,7 @@ def send_telegram_notification(db: Session, notification: Notification):
 
     chat_id = provider.endpoint
 
-    TELEGRAM_BOT_TOKEN = settings.TELEGRAM_BOT_TOKEN
-
-    if not TELEGRAM_BOT_TOKEN:
-        return True
-
-    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-    message = notification.message
-
-    data = {
-        "chat_id": chat_id,
-        "text": message,
-        "parse_mode": "HTML"
-    }
-    response = requests.post(url, json=data)
-    return response.json()
+    return send_message(chat_id, notification.message)
 
 
 def set_telegram_webhook():
@@ -98,10 +101,15 @@ def handle_telegram_webhook(db, data):
             if user_id:
                 user = db.query(User).filter(User.id==user_id).first()
                 set_provider(db, user, 'telegram', chat_id)
-                print(chat_id)
+
+                message =  f'You are logged in as "{user.login}"'
+                send_message(chat_id, message)
                 return {"status": "success", "message": f"User #{user_id} authenticated"}
             else:
-                return {'status':"error", "message":"Auth code notn found"}
+
+                message = 'Auth code not found or expired'
+                send_message(chat_id, message)
+                return {'status':"error", "message":message}
         else:
             print("Команда /auth без данных.")
     elif command == "/start":
