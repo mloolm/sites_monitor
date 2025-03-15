@@ -33,7 +33,7 @@ export default {
         '/add-site',
         { url: url },
         {
-            headers: { Authorization: `Bearer ${token}` } // Заголовки
+            headers: { Authorization: `Bearer ${token}` }
         }
     );
   },
@@ -43,7 +43,7 @@ export default {
         '/delete-site',
         { site_id: id },
         {
-            headers: { Authorization: `Bearer ${token}` } // Заголовки
+            headers: { Authorization: `Bearer ${token}` }
         }
     );
   },
@@ -72,7 +72,7 @@ export default {
         '/noty-message',
         { message: message},
         {
-            headers: { Authorization: `Bearer ${token}` } // Заголовки
+            headers: { Authorization: `Bearer ${token}` }
         }
     );
   },
@@ -82,10 +82,18 @@ export default {
         '/subscribe',
         { data:data },
         {
-            headers: { Authorization: `Bearer ${token}` } // Заголовки
+            headers: { Authorization: `Bearer ${token}` }
         }
     );
+  },
 
+  getSiteData(token, site_id){
+    return apiClient.get(
+        '/sites/' + site_id,
+        {
+            headers: { Authorization: `Bearer ${token}` }
+        }
+    );
   }
 
 

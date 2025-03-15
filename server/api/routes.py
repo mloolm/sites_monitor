@@ -2,7 +2,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from db.session import get_db
-from db.crud import create_site, get_site, get_sites, get_user_by_login, delete_site, get_sites_health
+from db.crud import create_site, get_site, get_sites, get_user_by_login, delete_site
+from db.monitor import get_sites_health, get_site_data
 from db.notifications import get_user_notification_endpoints, add_notification, set_provider
 from db.sender import send_message
 from schemas.site import SiteCreate, SiteDelete, Site as SiteSchema, SiteHealth
@@ -11,7 +12,6 @@ from typing import List
 from .auth import get_current_user
 from models.notification import Notification
 from schemas.notification import NotificationCreate, NotificationResponse, SendMessage
-from services.notification_providers.telegram import send_telegram_notification
 from core.config import settings
 from models.notification_auth import NotificationAuth
 from models.user import User
@@ -113,12 +113,20 @@ def sites_list(db: Session = Depends(get_db),current_user: str = Depends(get_cur
     print(health)
     return ret
 
-@router.get("/sites/{site_id}", response_model=SiteSchema)
+@router.get("/sites/{site_id}")
 def read_site(site_id: int, db: Session = Depends(get_db),current_user: str = Depends(get_current_user)):
     db_site = get_site(db, user=current_user, site_id=site_id)
     if db_site is None:
         raise HTTPException(status_code=404, detail="Site not found")
-    return db_site
+
+    site_data = get_site_data(db, site_id)
+
+    ret = {
+        "site_info":db_site,
+        "site_data": site_data
+    }
+
+    return ret
 
 @router.post("/delete-site")
 def del_site(site: SiteDelete, db: Session = Depends(get_db),current_user: str = Depends(get_current_user)):

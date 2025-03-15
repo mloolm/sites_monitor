@@ -51,10 +51,10 @@
 import { ref, onMounted } from 'vue';
 import { useSiteStore } from '../stores/siteStore';
 import api from '../api';
-
+import {useRouter} from "vue-router";
 const siteStore = useSiteStore(); // Получаем доступ к хранилищу
 const token = localStorage.getItem("token");
-
+const router = useRouter();
 // Состояния для диалога удаления
 const deleteDialog = ref(false);
 const siteToDelete = ref(null);

@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from db.notifications import add_notification
 from db.sender import send_message
 from models.user import User
+import time
 
 celery_app = Celery(__name__, broker=settings.REDIS_URL)
 
@@ -21,12 +22,17 @@ def check_site_availability():
 
     for site in sites:
         try:
+            start_time = time.time()
             response = requests.get(site.url, timeout=10)
+            end_time = time.time()
+
             status_code = response.status_code
             is_online = 200 <= status_code < 300
+            response_time_ms = round((end_time - start_time) * 1000)
         except requests.exceptions.RequestException:
             is_online = False
             status_code = None
+            response_time_ms = None
 
         # Обновляем данные в таблице Site
         site.last_checked = datetime.utcnow()
@@ -49,6 +55,7 @@ def check_site_availability():
             is_ok=is_online,
             check_dt=datetime.utcnow(),
             code=status_code,
+            response_time_ms=response_time_ms
         )
         db.add(monitor_record)
 
