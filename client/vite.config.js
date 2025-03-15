@@ -1,4 +1,3 @@
-// vite.config.js
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import vuetify from 'vite-plugin-vuetify';
@@ -9,7 +8,7 @@ export default defineConfig({
     vue(),
     vuetify({ autoImport: true }),
     VitePWA({
-      registerType: 'autoUpdate', // Автоматическое обновление service worker
+      registerType: 'autoUpdate',
       manifest: {
         name: 'My Awesome App',
         short_name: 'AwesomeApp',
@@ -31,12 +30,14 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,png,jpg,svg}'], // Файлы для кэширования
+        globPatterns: ['**/*.{js,css,html,png,jpg,svg}'],
       },
       devOptions: {
-        enabled: true, // Включение PWA в режиме разработки
-        type: 'module' // Использование ES modules для service worker
-      }
+        enabled: true,
+        type: 'module',
+      },
+      injectRegister: false,
+
     })
   ],
   server: {
@@ -45,7 +46,7 @@ export default defineConfig({
     strictPort: true,
     proxy: {
       '/api': {
-        target: 'http://backend:8000', // Явно указываем backend внутри Docker
+        target: 'http://backend:8000',
         changeOrigin: true,
         secure: false,
       },

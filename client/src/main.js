@@ -8,6 +8,7 @@ import 'vuetify/dist/vuetify.min.css';
 
 
 
+
 const app = createApp(App);
 const pinia = createPinia();
 
@@ -17,13 +18,11 @@ app.use(vuetify);
 
 app.mount('#app');
 
-// main.js или компонент Vue
-if ('Notification' in window && 'serviceWorker' in navigator) {
-  Notification.requestPermission().then((permission) => {
-    if (permission === 'granted') {
-      console.log('Разрешение на уведомления получено');
-    } else {
-      console.log('Разрешение на уведомления отклонено');
-    }
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').then((registration) => {
+    console.log('Service Worker зарегистрирован:', registration);
+  }).catch((error) => {
+    console.log('Ошибка регистрации Service Worker:', error);
   });
 }

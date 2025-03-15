@@ -3,7 +3,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from db.session import get_db
 from db.crud import create_site, get_site, get_sites, get_user_by_login, delete_site
-from db.notifications import get_user_notification_endpoints, send_message, add_notification
+from db.notifications import get_user_notification_endpoints, add_notification, set_provider
+from db.sender import send_message
 from schemas.site import SiteCreate, SiteDelete, Site as SiteSchema
 from schemas.user import User as UserSchema
 from typing import List
@@ -14,6 +15,9 @@ from services.notification_providers.telegram import send_telegram_notification
 from core.config import settings
 from models.notification_auth import NotificationAuth
 from models.user import User
+from pwa.pwa_manager import PwaManager
+from schemas.pwa import PwaSubscribe
+import json
 
 router = APIRouter(
     dependencies=[Depends(get_current_user)]  # Применяем ко всем маршрутам
@@ -95,7 +99,7 @@ def sites_list(db: Session = Depends(get_db),current_user: str = Depends(get_cur
         raise HTTPException(status_code=404, detail="No sites found")
 
     return sites
-    #return [{"id": site.id, "url": site.url} for site in sites]
+
 @router.get("/sites/{site_id}", response_model=SiteSchema)
 def read_site(site_id: int, db: Session = Depends(get_db),current_user: str = Depends(get_current_user)):
     db_site = get_site(db, user=current_user, site_id=site_id)
@@ -111,18 +115,35 @@ def del_site(site: SiteDelete, db: Session = Depends(get_db),current_user: str =
     return True
 
 
+@router.get("/vapid-key")
+def get_vapid_key(db: Session = Depends(get_db)):
+    return PwaManager.get_public_key()
 
+@router.post('/subscribe')
+def subscribe_pwa(
+    auth_data: PwaSubscribe,
+    db: Session = Depends(get_db),
+    current_user: str = Depends(get_current_user)
+):
+    try:
+        # Декодируем JSON из строки
+        data = json.loads(auth_data.data)
 
-@router.post("/notifications-test", response_model=NotificationResponse)
-def create_notification(notification: NotificationCreate, db: Session = Depends(get_db)):
-    db_notification = Notification(**notification.dict())
-    db.add(db_notification)
-    db.commit()
-    db.refresh(db_notification)
+        # Проверяем, что присутствуют все необходимые ключи
+        if not all(k in data for k in ["endpoint", "keys"]) or not all(k in data["keys"] for k in ["p256dh", "auth"]):
+            raise ValueError("Некорректные данные подписки")
 
-    # Отправка через Telegram, если указаны параметры
+        # Формируем подписку обратно в JSON строку
+        subscription_data = json.dumps({
+            "endpoint": data["endpoint"],
+            "keys": {
+                "p256dh": data["keys"]["p256dh"],
+                "auth": data["keys"]["auth"]
+            }
+        })
 
-    if settings.TELEGRAM_BOT_TOKEN:
-        send_telegram_notification(notification)
+        # Сохраняем подписку через set_provider
+        return set_provider(db, current_user, "pwa", subscription_data)
 
-    return db_notification
+    except (json.JSONDecodeError, ValueError):
+        raise HTTPException(status_code=400, detail="Некорректный формат данных")

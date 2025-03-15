@@ -60,16 +60,33 @@ export default {
     });
   },
 
+  getVapidKey(token){
+     return apiClient.get("/vapid-key", {
+      headers: {Authorization: `Bearer ${token}`},
+    });
+  },
+
   sendNotyMessage(token, message)
   {
-        return apiClient.post(
+    return apiClient.post(
         '/noty-message',
         { message: message},
         {
             headers: { Authorization: `Bearer ${token}` } // Заголовки
         }
     );
+  },
+
+  subscribePWA(token, data) {
+    return apiClient.post(
+        '/subscribe',
+        { data:data },
+        {
+            headers: { Authorization: `Bearer ${token}` } // Заголовки
+        }
+    );
 
   }
+
 
 };

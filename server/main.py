@@ -11,15 +11,25 @@ from sqlalchemy.orm import Session
 from fastapi import Request
 from models.notification_auth import NotificationAuth
 from services.notification_providers.telegram import handle_telegram_webhook
+from pwa.pwa_manager import PwaManager
+from contextlib import asynccontextmanager
 
 # Создаем таблицы в базе данных при запуске приложения
 Base.metadata.create_all(bind=engine)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    PwaManager.gen_keys()
+    yield
+
 
 # Создаём экземпляр FastAPI
 app = FastAPI(
     title="Site Monitoring API",
     description="API для мониторинга сайтов и SSL-сертификатов",
     version="1.0.0",
+    lifespan=lifespan
 )
 
 app.add_middleware(
@@ -89,3 +99,5 @@ async def telegram_webhook(
     response = handle_telegram_webhook(db, data)
 
     return response
+
+

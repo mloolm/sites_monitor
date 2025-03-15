@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     DB_PASSWORD: str
     STAGE: str
     SECRET_KEY: str
+    CLAIMS_EMAIL: str
 
     TELEGRAM_BOT_TOKEN: Optional[str] = None
 

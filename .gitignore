@@ -6,3 +6,4 @@ client/package-lock.json
 client/dev-dist/*
 package-lock.json
 node_modules
+server/keys/*

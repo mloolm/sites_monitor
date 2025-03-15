@@ -5,7 +5,7 @@ from db.session import get_db
 from sqlalchemy.orm import Session
 from core.config import settings
 from db.session import Base
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, func, Enum, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, func, Enum, ForeignKey, Text
 from sqlalchemy.orm import relationship
 import hashlib
 
@@ -21,7 +21,8 @@ class NotificationAuth(Base):
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), index=True)
     method = Column(Enum("telegram", "pwa", name="auth_method"), nullable=False)
     created_at = Column(DateTime, default=func.now())
-    endpoint = Column(String(255), unique=True, nullable=True)  # chat_id для Telegram или endpoint для PWA
+    endpoint = Column(Text, nullable=True)
+    endpoint_hash = Column(String(127), nullable=False, index=True)
     owner = relationship("User", back_populates="notification_auth")
 
     @classmethod
@@ -39,17 +40,14 @@ class NotificationAuth(Base):
         return auth_code
 
     @classmethod
-    def check_telegram_auth_code(cls, user_id:int, code:string):
-        key = cls.get_telegram_auth_code_key(user_id)
+    def check_telegram_auth_code(cls, code:string):
 
-        existing_code = redis_client.get(code)
-        if not existing_code:
+
+        existing_code_for_user = redis_client.get(code)
+        if not existing_code_for_user:
             return False
 
-        if user_id == existing_code:
-            return True
-
-        return False
+        return existing_code_for_user
 
     @classmethod
     def get_telegram_webhook_url_hash(cls):
@@ -61,3 +59,8 @@ class NotificationAuth(Base):
 
         return hash_hex
 
+    @classmethod
+    def get_endpoint_hash(cls, endpoint: str):
+        hash_object = hashlib.sha256(endpoint.encode('utf-8'))
+        hash_hex = hash_object.hexdigest()
+        return hash_hex

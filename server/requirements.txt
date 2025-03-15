@@ -32,3 +32,6 @@ pytz
 
 # Дополнительно
 python-multipart
+pywebpush
+ecdsa
+py-vapid

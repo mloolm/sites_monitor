@@ -5,6 +5,8 @@ from core.config import settings
 from models.notification import Notification
 from models.notification_auth import NotificationAuth
 from sqlalchemy.orm import Session
+from db.notifications import set_provider
+from models.user import User
 
 
 def send_telegram_notification(db: Session, notification: Notification):
@@ -80,6 +82,8 @@ def handle_telegram_webhook(db, data):
         print("Сообщение не содержит текста.")
         return {"status": "error", "message": "No text in message"}
 
+    chat_id = message.get('chat').get('id')
+
     # Разделяем команду и данные
     parts = text.split(maxsplit=1)
     command = parts[0]  # Команда (например, "/auth")
@@ -89,7 +93,15 @@ def handle_telegram_webhook(db, data):
     if command == "/auth":
         if data:
             print(f"Получен код авторизации: {data}")
-            # Здесь можно добавить логику для обработки кода авторизации
+            user_id = NotificationAuth.check_telegram_auth_code(data)
+
+            if user_id:
+                user = db.query(User).filter(User.id==user_id).first()
+                set_provider(db, user, 'telegram', chat_id)
+                print(chat_id)
+                return {"status": "success", "message": f"User #{user_id} authenticated"}
+            else:
+                return {'status':"error", "message":"Auth code notn found"}
         else:
             print("Команда /auth без данных.")
     elif command == "/start":

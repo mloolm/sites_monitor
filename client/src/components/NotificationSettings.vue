@@ -35,6 +35,20 @@
   <v-container>
     <v-row align="center">
       <v-col cols="12">
+         <v-btn
+        color="primary"
+        @click="subscribeToPush"
+        :disabled="isLoading"
+        >
+          Subscribe to Push
+        </v-btn>
+      </v-col>
+    </v-row>
+  </v-container>
+
+  <v-container>
+    <v-row align="center">
+      <v-col cols="12">
         <v-btn
         color="primary"
         @click="sendTestMessage"
@@ -63,6 +77,36 @@ function sendTestMessage(){
   const message = 'Test message from site monitor!'
   api.sendNotyMessage(token, message)
 }
+
+async function subscribeToPush() {
+    if(!token) return;
+
+    if (!('serviceWorker' in navigator))
+    {
+      console.error('Service worker not loaded')
+      return;
+    }
+
+
+    let vapid_pub = await api.getVapidKey(token);
+
+    if(typeof vapid_pub.data == 'undefined')
+    {
+        console.error('Error retrieving public key');
+        return
+    }
+
+    const registration = await navigator.serviceWorker.ready;
+    const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: vapid_pub.data
+    });
+
+    console.log("Push подписка:", JSON.stringify(subscription));
+    api.subscribePWA(token, JSON.stringify(subscription))
+}
+
+
 
 // Функция для получения кода Telegram
 function fetchTelegramToken() {
