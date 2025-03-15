@@ -2,10 +2,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from db.session import get_db
-from db.crud import create_site, get_site, get_sites, get_user_by_login, delete_site
+from db.crud import create_site, get_site, get_sites, get_user_by_login, delete_site, get_sites_health
 from db.notifications import get_user_notification_endpoints, add_notification, set_provider
 from db.sender import send_message
-from schemas.site import SiteCreate, SiteDelete, Site as SiteSchema
+from schemas.site import SiteCreate, SiteDelete, Site as SiteSchema, SiteHealth
 from schemas.user import User as UserSchema
 from typing import List
 from .auth import get_current_user
@@ -89,7 +89,7 @@ def send_message_from_client(
 def create_new_site(site: SiteCreate, db: Session = Depends(get_db), current_user: str = Depends(get_current_user)):
     return create_site(db=db, user=current_user, url=site.url)
 
-@router.get("/sites/", response_model=List[SiteSchema])
+@router.get("/sites/", response_model=List[SiteHealth])
 def sites_list(db: Session = Depends(get_db),current_user: str = Depends(get_current_user)):
     """
         Возвращает список всех сайтов.
@@ -98,7 +98,20 @@ def sites_list(db: Session = Depends(get_db),current_user: str = Depends(get_cur
     if not sites:
         raise HTTPException(status_code=404, detail="No sites found")
 
-    return sites
+    health = get_sites_health(db, sites)
+
+    ret = []
+    for site in sites:
+        row = {
+            "id": site.id,
+            "url": site.url,
+            'is_active':site.is_active,
+            'health': health[site.id]|0
+        }
+        ret.append(row)
+
+    print(health)
+    return ret
 
 @router.get("/sites/{site_id}", response_model=SiteSchema)
 def read_site(site_id: int, db: Session = Depends(get_db),current_user: str = Depends(get_current_user)):

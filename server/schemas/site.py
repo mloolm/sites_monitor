@@ -13,3 +13,14 @@ class Site(BaseModel):
 
     class Config:
         orm_mode = True
+
+class SiteHealth(BaseModel):
+    id: int
+    url: str
+    is_active: bool
+    health: int
+
+    class Config:
+        orm_mode = True
+
+

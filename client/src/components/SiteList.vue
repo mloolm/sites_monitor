@@ -1,19 +1,34 @@
 <template>
-<v-container>
-        <v-card>
-          <v-card-title>Sites list</v-card-title>
-          <v-list>
-            <v-list-item v-for="site in siteStore.sites" :key="site.id">
-              <v-list-item-content class="d-flex align-center justify-space-between">
-                <v-list-item-title class="text-body-1">{{ site.url }}</v-list-item-title>
-                <v-btn icon color="error" @click="openDeleteDialog(site)" class="ml-2">
-                  <span class="material-icons">delete</span>
-                </v-btn>
-              </v-list-item-content>
-            </v-list-item>
-          </v-list>
-        </v-card>
-      </v-container>
+ <v-container>
+    <v-card>
+      <v-card-title>Sites list</v-card-title>
+      <v-list>
+        <v-list-item
+          v-for="site in siteStore.sites"
+          :key="site.id"
+
+          @click="goToSite(site.id)"
+        >
+          <v-list-item-content class="d-flex align-center justify-space-between">
+            <v-list-item-title class="text-body-1">
+              {{ site.url }}
+              <v-chip
+                class="ml-2"
+                :class="getHealthClass(site.health)"
+
+                text-color="black"
+              >
+                {{ site.health }}%
+              </v-chip>
+            </v-list-item-title>
+            <v-btn icon color="error" @click.stop="openDeleteDialog(site)" class="ml-2">
+              <span class="material-icons">delete</span>
+            </v-btn>
+          </v-list-item-content>
+        </v-list-item>
+      </v-list>
+    </v-card>
+  </v-container>
 
     <!-- Диалоговое окно подтверждения -->
     <v-dialog v-model="deleteDialog" max-width="400">
@@ -74,10 +89,34 @@ async function confirmDelete() {
     alert('Не удалось удалить сайт.');
   }
 }
+
+const getHealthClass = (health) => {
+  if (health === 100) {
+    return 'ok';
+  } else if (health >= 80) {
+    return 'warning';
+  } else {
+    return 'down';
+  }
+};
+
+// Функция для перехода на страницу сайта
+const goToSite = (siteId) => {
+  router.push(`/site/${siteId}`);
+};
+
 </script>
 
 <style scoped>
-.site-list {
-  padding: 20px;
+.ok {
+  background-color: #d4edda; /* Зеленый цвет для статуса OK */
+}
+
+.warning {
+  background-color: #fff3cd; /* Желтый цвет для статуса Warning */
+}
+
+.down {
+  background-color: #f8d7da; /* Красный цвет для статуса Down */
 }
 </style>
