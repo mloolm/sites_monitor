@@ -4,13 +4,14 @@
       <v-card-title>Notification Settings</v-card-title>
 
       <!-- Telegram -->
-      <v-card-subtitle>Telegram</v-card-subtitle>
+      <v-card-subtitle>Auth code for Telegram</v-card-subtitle>
       <v-card-text>
         <v-row align="center">
-          <v-col cols="12" md="6">
+          <v-col cols="12" sm="8">
             <v-text-field
+                variant="underlined"
               v-model="telegramToken"
-              label="Code for Telegram"
+              label="Press 'Get code' to generate code"
               readonly
               outlined
               dense
@@ -18,7 +19,7 @@
               :error-messages="errorMessage"
             ></v-text-field>
           </v-col>
-          <v-col cols="12" md="6">
+          <v-col cols="12" sm="4" class="text-center">
             <v-btn
               color="primary"
               @click="fetchTelegramToken"
@@ -30,9 +31,8 @@
         </v-row>
       </v-card-text>
     </v-card>
-  </v-container>
-
-  <v-container>
+    <!-- Push -->
+    <v-card class="pa-4">
     <v-row align="center">
       <v-col cols="12">
          <v-btn
@@ -44,10 +44,10 @@
         </v-btn>
       </v-col>
     </v-row>
-  </v-container>
+    </v-card>
+    <v-card class="pa-4">
 
-  <v-container>
-    <v-row align="center">
+ <v-row align="center">
       <v-col cols="12">
         <v-btn
         color="primary"
@@ -58,7 +58,10 @@
         </v-btn>
       </v-col>
     </v-row>
+    </v-card>
   </v-container>
+
+
 </template>
 
 <script setup>

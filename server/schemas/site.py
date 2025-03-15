@@ -1,7 +1,7 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, HttpUrl
 
 class SiteCreate(BaseModel):
-    url: str
+    url: HttpUrl
 
 class SiteDelete(BaseModel):
     site_id: int

@@ -1,9 +1,7 @@
 <template>
-  <v-app>
-    <v-main>
-      <v-container>
+<v-container>
         <v-card>
-          <v-card-title>Список сайтов</v-card-title>
+          <v-card-title>Sites list</v-card-title>
           <v-list>
             <v-list-item v-for="site in siteStore.sites" :key="site.id">
               <v-list-item-content class="d-flex align-center justify-space-between">
@@ -16,8 +14,6 @@
           </v-list>
         </v-card>
       </v-container>
-    </v-main>
-
 
     <!-- Диалоговое окно подтверждения -->
     <v-dialog v-model="deleteDialog" max-width="400">
@@ -33,7 +29,7 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-  </v-app>
+
 </template>
 
 <script setup>
@@ -49,13 +45,13 @@ const deleteDialog = ref(false);
 const siteToDelete = ref(null);
 
 onMounted(async () => {
-  await siteStore.fetchSites(token); // Загружаем список сайтов при монтировании
+  await siteStore.fetchSites(token);
 });
 
 // Открытие диалога удаления
 function openDeleteDialog(site) {
-  siteToDelete.value = site; // Сохраняем сайт, который хотим удалить
-  deleteDialog.value = true; // Открываем диалог
+  siteToDelete.value = site;
+  deleteDialog.value = true;
 }
 
 // Закрытие диалога удаления
@@ -71,7 +67,7 @@ async function confirmDelete() {
       await api.deleteSite(token, siteToDelete.value.id); // Удаляем сайт через API
       await siteStore.fetchSites(token); // Обновляем список сайтов
       closeDeleteDialog(); // Закрываем диалог
-      alert('Сайт успешно удален!');
+
     }
   } catch (error) {
     console.error('Ошибка при удалении сайта:', error);
