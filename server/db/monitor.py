@@ -38,19 +38,48 @@ def get_sites_health(db: Session, sites):
         total_checks = row.total_checks
         successful_checks = row.successful_checks
         availability_percentage = round((successful_checks / total_checks * 100)) if total_checks > 0 else 0
+        health_data[site_id] = {
+            'up':availability_percentage,
+            'ssl':None
+        }
 
-        health_data[site_id] = availability_percentage
+
+    #SSL сертиикаты
+    sql = text("""WITH ranked AS (
+            SELECT *,
+                   ROW_NUMBER() OVER (PARTITION BY site_id ORDER BY check_dt DESC) AS rn
+            FROM ssl_monitor
+            WHERE site_id IN :site_ids
+        )
+        SELECT * FROM ranked WHERE rn = 1;
+          
+            """)
+    ssl_state = db.execute(sql, {"site_ids": tuple(site_ids)}).fetchall()
+    if ssl_state:
+        for row in ssl_state:
+            health_data[row.site_id]['ssl'] = row.valid_to
+
+    print (health_data)
 
     return health_data
 
-def get_site_data(db: Session, site_id:int):
-    last_week = datetime.utcnow() - timedelta(days=7)
-    monitor_records = (
-        db.query(Monitor)
-        .filter(Monitor.site_id == site_id, Monitor.check_dt >= last_week)
-        .order_by(Monitor.check_dt)  # Сортируем по check_dt от нового к старому
-        .all()
-    )
+def get_site_data(db: Session, site_id:int, period:str='week'):
+    monitor_records = None
+    if period in ['week', 'day']:
+        if period == 'week':
+            period = datetime.utcnow() - timedelta(days=7)
+        elif period == 'day':
+            period = datetime.utcnow() - timedelta(days=1)
+
+
+        monitor_records = (
+            db.query(Monitor)
+            .filter(Monitor.site_id == site_id, Monitor.check_dt >= period)
+            .order_by(Monitor.check_dt)  # Сортируем по check_dt от нового к старому
+            .all()
+        )
+    elif period in ['month', 'year']:
+        print(f"Period: {period}")
 
     if not monitor_records:
         return []

@@ -19,8 +19,8 @@ celery_app.conf.update(
     beat_schedule={
         "check-site-availability": {
             "task": "tasks.monitor.check_site_availability",
-            #"schedule": settings.INTERVAL * 60,  # Частота проверки доступности
-            "schedule":  120
+            "schedule": settings.INTERVAL * 60,  # Частота проверки доступности
+
         },
         "check-ssl-certificates": {
             "task": "tasks.ssl_checker.check_ssl_certificates",

@@ -1,3 +1,5 @@
+from datetime import datetime
+from typing import Union
 from pydantic import BaseModel, HttpUrl
 
 class SiteCreate(BaseModel):
@@ -19,6 +21,7 @@ class SiteHealth(BaseModel):
     url: str
     is_active: bool
     health: int
+    ssl: Union[datetime, None]
 
     class Config:
         orm_mode = True

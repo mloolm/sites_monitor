@@ -87,9 +87,13 @@ export default {
     );
   },
 
-  getSiteData(token, site_id){
+  getSiteData(token, site_id, period='week'){
+    if (!period)
+    {
+      period = 'week'
+    }
     return apiClient.get(
-        '/sites/' + site_id,
+        '/sites/' + site_id + '/' +period,
         {
             headers: { Authorization: `Bearer ${token}` }
         }

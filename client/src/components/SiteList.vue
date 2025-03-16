@@ -20,6 +20,17 @@
               >
                 {{ site.health }}%
               </v-chip>
+
+             <v-chip
+                v-if="site.url.startsWith('https')"
+                class="ml-2"
+                :class="getSSLClass(site.ssl)"
+                text-color="black"
+              >
+                SSL valid to {{ site.ssl ? new Date(site.ssl).toISOString().slice(0, 10).split('-').reverse().join('.') : '-' }}
+
+              </v-chip>
+
             </v-list-item-title>
             <v-btn icon color="error" @click.stop="openDeleteDialog(site)" class="ml-2">
               <span class="material-icons">delete</span>
@@ -90,8 +101,29 @@ async function confirmDelete() {
   }
 }
 
+const getSSLClass = (ssl) => {
+  if (ssl == null) {
+    return 'ssl-error';
+  }
+
+  // Преобразуем ssl в дату, если это строка
+  const sslDate = new Date(ssl);
+  const currentDate = new Date();
+
+  // Рассчитываем разницу в днях
+  const diffTime = sslDate - currentDate;
+  const diffDays = diffTime / (1000 * 3600 * 24);
+
+  // Если оставшиеся дни меньше недели
+  if (diffDays <= 7) {
+    return 'ssl-warning';
+  }
+
+  return 'ssl-ok';
+};
+
 const getHealthClass = (health) => {
-  if (health === 100) {
+  if (health >= 90) {
     return 'ok';
   } else if (health >= 80) {
     return 'warning';
@@ -108,15 +140,15 @@ const goToSite = (siteId) => {
 </script>
 
 <style scoped>
-.ok {
+.ok, .ssl-ok {
   background-color: #d4edda; /* Зеленый цвет для статуса OK */
 }
 
-.warning {
+.warning, .ssl-warning  {
   background-color: #fff3cd; /* Желтый цвет для статуса Warning */
 }
 
-.down {
-  background-color: #f8d7da; /* Красный цвет для статуса Down */
+.down, .ssl-error {
+  background-color: #fbc7cc; /* Красный цвет для статуса Down */
 }
 </style>
