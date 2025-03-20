@@ -5,6 +5,7 @@ from .monitor import Monitor
 from .ssl_certificate import SSLCertificate
 from .notification import Notification
 from .notification_auth import NotificationAuth
+from .monitor_by_days import MonitorByDay
 # Экспортируем все модели
 __all__ = [
     "Site",
@@ -12,5 +13,6 @@ __all__ = [
     "Monitor",
     "SSLCertificate",
     "Notification",
-    "NotificationAuth"
+    "NotificationAuth",
+    "MonitorByDay"
 ]

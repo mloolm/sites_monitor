@@ -19,6 +19,7 @@ from pwa.pwa_manager import PwaManager
 from schemas.pwa import PwaSubscribe
 import json
 
+
 router = APIRouter(
     dependencies=[Depends(get_current_user)]  # Применяем ко всем маршрутам
 )
@@ -126,6 +127,7 @@ def read_site(site_id: int, period:str='week', db: Session = Depends(get_db),cur
         "site_info":db_site,
         "site_data": site_data
     }
+
 
     return ret
 

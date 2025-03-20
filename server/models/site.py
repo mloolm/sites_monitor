@@ -13,8 +13,9 @@ class Site(Base):
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), index=True)
     owner = relationship("User", back_populates="sites")
 
-    # Связь с таблицей Monitor
+    # Связь с таблицами Monitor
     monitor = relationship("Monitor", back_populates="owner", cascade="all, delete-orphan")
+    monitor_by_day = relationship("MonitorByDay", back_populates="owner", cascade="all, delete-orphan")
 
     # Связь с таблицей SSL Monitor
     ssl_monitor = relationship("SSLCertificate", back_populates="owner", cascade="all, delete-orphan")

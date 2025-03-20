@@ -4,12 +4,13 @@ from celery import Celery
 from db.session import SessionLocal
 from models.site import Site
 from models.monitor import Monitor
-from datetime import datetime
+from datetime import datetime, timedelta
 from core.config import settings
 from sqlalchemy.orm import Session
 from db.notifications import add_notification
 from db.sender import send_message
 from models.user import User
+from db.monitor_by_day import aggregate_monitor_data
 import time
 
 celery_app = Celery(__name__, broker=settings.REDIS_URL)
@@ -59,6 +60,10 @@ def check_site_availability():
         )
         db.add(monitor_record)
 
+        #свертка данных
+        aggregate_monitor_data(db)
+
+
         # Уведомления
         if status_changed:
             if is_online:
@@ -74,3 +79,31 @@ def check_site_availability():
     # Сохраняем все изменения в базу данных
     db.commit()
     db.close()
+
+def clean_up():
+    # Пороговое значение: записи старше этого периода будут удалены
+    retention_period_days = 7  # 7 дней
+
+    # Создаем сессию базы данных
+    db: Session = SessionLocal()
+
+    try:
+        # Вычисляем дату, до которой записи считаются "старыми"
+        cutoff_date = datetime.utcnow() - timedelta(days=retention_period_days)
+
+        # Удаляем записи старше cutoff_date
+        deleted_count = db.query(Monitor).filter(
+            Monitor.check_dt < cutoff_date
+        ).delete()
+
+        # Фиксируем изменения в базе данных
+        db.commit()
+
+        print(f"Deleted {deleted_count} records from the Monitor table.")
+    except Exception as e:
+        # В случае ошибки откатываем транзакцию
+        db.rollback()
+        print(f"An error occurred during cleanup: {e}")
+    finally:
+        # Закрываем сессию
+        db.close()
