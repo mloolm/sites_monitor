@@ -7,17 +7,35 @@ from pytz import utc
 from db.session import SessionLocal
 from models.site import Site
 from models.ssl_certificate import SSLCertificate
-
+from db.notifications import add_notification
+from db.sender import send_message
+from models.user import User
+from urllib.parse import urlparse
 
 @shared_task
 def check_ssl_certificates():
     db = SessionLocal()
     sites = db.query(Site).filter_by(is_active=True).all()
+    users = {}
 
     for site in sites:
         try:
-            # Извлекаем домен из URL
-            domain = site.url.replace("http://", "").replace("https://", "").split('/')[0]
+            if not hasattr(site, 'url') or not isinstance(site.url, str):
+                continue
+
+            if not site.url:
+                continue
+
+            # Проверяем, начинается ли URL с https://
+            if not site.url.startswith('https://'):
+                continue
+
+            parsed_url = urlparse(site.url)
+            domain = parsed_url.netloc
+
+            if not domain:
+                continue
+
 
             # Получаем SSL-сертификат
             context = ssl.create_default_context()
@@ -50,9 +68,15 @@ def check_ssl_certificates():
             db.add(ssl_cert)
             db.commit()
 
-            # Уведомление о скором истечении (заглушка)
             if is_expiring_soon:
-                print(f"ALERT: Certificate for {site.url} expires in {(valid_to - current_time).days} days!")
+                message = f"ALERT: Certificate for {site.url} expires in {(valid_to - current_time).days} days!"
+                if not site.user_id in users:
+                    users[site.user_id] = db.query(User).filter(User.id == site.user_id).first()
+
+                if (site.user_id in users) and users[site.user_id]:
+                    notification = add_notification(db, users[site.user_id], message)
+                    send_message(db, notification)
+
 
         except Exception as e:
             # Обработка ошибок

@@ -19,7 +19,6 @@ from pwa.pwa_manager import PwaManager
 from schemas.pwa import PwaSubscribe
 import json
 
-
 router = APIRouter(
     dependencies=[Depends(get_current_user)]  # Применяем ко всем маршрутам
 )
@@ -32,6 +31,7 @@ def get_user_data(
     """
     Возвращает информацию о текущем пользователе.
     """
+
     if current_user:
         return current_user
     else:

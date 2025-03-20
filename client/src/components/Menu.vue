@@ -11,11 +11,12 @@
               :to="item.route"
               class="mr-3"
             >
-              {{ item.text }}
+              <span class="material-icons">{{ item.icon }}</span>
             </router-link>
 
-            <v-btn color="error" @click="logout">Logout</v-btn>
-
+            <router-link>
+              <span class="material-icons" @click="logout">logout</span>
+            </router-link>
           </div>
 
           </div>
@@ -51,8 +52,9 @@ onMounted(async () => {
 });
 
 const menuItems = ref([
-  { text: 'Home', route: '/dashboard' },
-  { text: 'Notifications', route: '/noty' },
+  { icon: 'home', route: '/dashboard' },
+  { icon: 'notifications', route: '/noty' },
+
 ]);
 function logout() {
   localStorage.removeItem("token");

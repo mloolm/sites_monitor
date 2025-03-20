@@ -12,10 +12,12 @@
           <v-list-item-content class="d-flex align-center justify-space-between">
             <v-list-item-title class="text-body-1">
               {{ site.url }}
-              <v-chip
-                class="ml-2"
-                :class="getHealthClass(site.health)"
 
+              <div class="mb-1">
+              <v-chip
+                class="ml-0"
+                :class="getHealthClass(site.health)"
+                size="x-small"
                 text-color="black"
               >
                 {{ site.health }}%
@@ -26,17 +28,27 @@
                 class="ml-2"
                 :class="getSSLClass(site.ssl)"
                 text-color="black"
+                size="x-small"
               >
                 SSL valid to {{ site.ssl ? new Date(site.ssl).toISOString().slice(0, 10).split('-').reverse().join('.') : '-' }}
 
               </v-chip>
 
+              </div>
+
             </v-list-item-title>
-            <v-btn icon color="error" @click.stop="openDeleteDialog(site)" class="ml-2">
+            <v-btn
+                icon="delete"
+                size="x-small"
+                color="error"
+                flat
+                @click.stop="openDeleteDialog(site)" class="ml-2">
               <span class="material-icons">delete</span>
             </v-btn>
           </v-list-item-content>
+          <v-divider></v-divider>
         </v-list-item>
+
       </v-list>
     </v-card>
   </v-container>
