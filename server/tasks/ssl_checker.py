@@ -1,4 +1,3 @@
-# server/tasks/ssl_checker.py
 import ssl
 import socket
 from datetime import datetime, timedelta
@@ -36,7 +35,6 @@ def check_ssl_certificates():
             if not domain:
                 continue
 
-
             # Получаем SSL-сертификат
             context = ssl.create_default_context()
             with socket.create_connection((domain, 443), timeout=10) as sock:
@@ -59,7 +57,7 @@ def check_ssl_certificates():
             # Создаем запись в базе
             ssl_cert = SSLCertificate(
                 site_id=site.id,
-                is_ok=is_valid,  # Теперь зависит от срока действия
+                is_ok=is_valid,  
                 check_dt=current_time,
                 issuer=issuer_str,
                 valid_from=valid_from,
@@ -70,20 +68,19 @@ def check_ssl_certificates():
 
             if is_expiring_soon:
                 message = f"ALERT: Certificate for {site.url} expires in {(valid_to - current_time).days} days!"
-                if not site.user_id in users:
+                if site.user_id not in users:
                     users[site.user_id] = db.query(User).filter(User.id == site.user_id).first()
 
-                if (site.user_id in users) and users[site.user_id]:
+                if site.user_id in users and users[site.user_id]:
                     notification = add_notification(db, users[site.user_id], message)
                     send_message(db, notification)
-
 
         except Exception as e:
             # Обработка ошибок
             ssl_cert = SSLCertificate(
                 site_id=site.id,
                 is_ok=False,
-                check_dt=datetime.utcnow(),
+                check_dt=datetime.utcnow().replace(tzinfo=utc),
                 issuer="Error",
                 valid_from=None,
                 valid_to=None,
@@ -91,3 +88,11 @@ def check_ssl_certificates():
             db.add(ssl_cert)
             db.commit()
             print(f"SSL check failed for {site.url}: {str(e)}")
+
+            message = f"ALERT: SSL certificate for {site.url} is missing or invalid!"
+            if site.user_id not in users:
+                users[site.user_id] = db.query(User).filter(User.id == site.user_id).first()
+
+            if site.user_id in users and users[site.user_id]:
+                notification = add_notification(db, users[site.user_id], message)
+                send_message(db, notification)
