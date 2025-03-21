@@ -63,17 +63,20 @@ def check_site_availability():
         #свертка данных
         aggregate_monitor_data(db)
 
-
         # Уведомления
         if status_changed:
+            noty_url = f'/site/{site.id}'
+
             if is_online:
+                noty_title = "Hooray!"
                 message = f"Site {site.url} is now online"
             else:
-                message = f"Attention! Site {site.url} is offline"
+                noty_title = "Attention!"
+                message = f"Site {site.url} is offline"
 
             user = db.query(User).filter(User.id == site.user_id).first()
             if user:
-                notification = add_notification(db, user, message)
+                notification = add_notification(db, user, message, noty_url, noty_title)
                 send_message(db, notification)
 
     # Сохраняем все изменения в базу данных

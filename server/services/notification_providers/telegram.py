@@ -36,7 +36,17 @@ def send_telegram_notification(db: Session, notification: Notification):
 
     chat_id = provider.endpoint
 
-    return send_message(chat_id, notification.message)
+    message = notification.message
+
+    if notification.title:
+        message = f"<b>{notification.title}</b>\n{message}"
+
+
+    #if notification.url:
+    #    message = f"{message}\n\n<a href='{notification.url}'>More info</a>"
+
+
+    return send_message(chat_id, message)
 
 
 def set_telegram_webhook():

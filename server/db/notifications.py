@@ -6,6 +6,7 @@ from models.notification import Notification
 from core.config import settings
 from models.user import User
 from sqlalchemy.exc import IntegrityError
+from typing import Optional
 import json
 import requests
 from pywebpush import webpush, WebPushException
@@ -36,14 +37,12 @@ def get_user_notification_endpoints(db: Session, user_id: int) -> List[Dict[str,
     ]
     return result
 
-def add_notification(db: Session, user: User, message: str):
-    db_notification = Notification(message=message, user_id=user.id)
+def add_notification(db: Session, user: User, message: str, url:Optional[str] = None,  title:Optional[str] = None):
+    db_notification = Notification(message=message, user_id=user.id, url=url, title=title)
     db.add(db_notification)
     db.commit()
     db.refresh(db_notification)
     return db_notification
-
-
 
 
 def set_provider(db: Session, user: User, provider: str, endpoint: str):

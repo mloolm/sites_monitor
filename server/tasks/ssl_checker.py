@@ -67,12 +67,15 @@ def check_ssl_certificates():
             db.commit()
 
             if is_expiring_soon:
-                message = f"ALERT: Certificate for {site.url} expires in {(valid_to - current_time).days} days!"
+                message = f"Certificate for {site.url} expires in {(valid_to - current_time).days} days!"
+                noty_url = '/dashboard'
+                noty_title = "SSL ALERT!"
+
                 if site.user_id not in users:
                     users[site.user_id] = db.query(User).filter(User.id == site.user_id).first()
 
                 if site.user_id in users and users[site.user_id]:
-                    notification = add_notification(db, users[site.user_id], message)
+                    notification = add_notification(db, users[site.user_id], message, noty_url, noty_title)
                     send_message(db, notification)
 
         except Exception as e:
@@ -94,5 +97,7 @@ def check_ssl_certificates():
                 users[site.user_id] = db.query(User).filter(User.id == site.user_id).first()
 
             if site.user_id in users and users[site.user_id]:
-                notification = add_notification(db, users[site.user_id], message)
+                noty_url = '/dashboard'
+                noty_title = "SSL Error!"
+                notification = add_notification(db, users[site.user_id], message, noty_url, noty_title)
                 send_message(db, notification)

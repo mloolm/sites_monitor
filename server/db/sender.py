@@ -31,15 +31,24 @@ def send_message(db: Session, notification: Notification):
             if all(k in endpoint for k in ["endpoint", "keys"]) or not all(k in endpoint["keys"] for k in ["p256dh", "auth"]):
 
                 icon = None
-                url = None
+
                 VAPID_PRIVATE_KEY = PwaManager.get_private_key()
                 VAPID_CLAIMS = {
                     "sub": "mailto:" + settings.CLAIMS_EMAIL
                 }
 
                 try:
+                    title = 'New event'
+                    if notification.title:
+                        title = notification.title
+
+                    url = None
+                    if notification.url:
+                        url=notification.url
+
+
                     payload = {
-                        "title": 'New event',
+                        "title": title,
                         "body": notification.message,
                         "icon": icon,
                         "url": url
@@ -57,12 +66,6 @@ def send_message(db: Session, notification: Notification):
                         vapid_claims=VAPID_CLAIMS
                     )
 
-
-                    print(subscription_info,
-                        json.dumps(payload),
-                        VAPID_PRIVATE_KEY,
-                        VAPID_CLAIMS,
-                          res)
 
                     print(f"пуш-уведомления: {payload}:", res, flush=True)
                     notification_send = True
