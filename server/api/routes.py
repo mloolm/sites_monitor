@@ -121,14 +121,17 @@ def read_site(site_id: int, period:str='week', db: Session = Depends(get_db),cur
     if db_site is None:
         raise HTTPException(status_code=404, detail="Site not found")
 
-    site_data = get_site_data(db, site_id, period)
+    try:
+        site_data = get_site_data(db, site_id, period)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid input: {str(e)}")
+
+
 
     ret = {
         "site_info":db_site,
         "site_data": site_data
     }
-
-
     return ret
 
 @router.post("/delete-site")

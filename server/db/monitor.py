@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from sqlalchemy import text
 
+from models import MonitorByDay
 from models.monitor import Monitor
 from sqlalchemy.orm import Session
 
@@ -65,35 +66,58 @@ def get_sites_health(db: Session, sites):
 
 def get_site_data(db: Session, site_id:int, period:str='week'):
     monitor_records = None
+
+    if period == 'week':
+        delta = datetime.utcnow() - timedelta(days=7)
+    elif period == 'day':
+        delta = datetime.utcnow() - timedelta(days=1)
+    elif period == 'month':
+        delta = datetime.utcnow() - timedelta(days=30)
+    elif period == 'year':
+        delta = datetime.utcnow() - timedelta(days=365)
+    else:
+        raise ValueError(f"Bad period {period}")
+
     if period in ['week', 'day']:
-        if period == 'week':
-            period = datetime.utcnow() - timedelta(days=7)
-        elif period == 'day':
-            period = datetime.utcnow() - timedelta(days=1)
-
-
         monitor_records = (
             db.query(Monitor)
-            .filter(Monitor.site_id == site_id, Monitor.check_dt >= period)
+            .filter(Monitor.site_id == site_id, Monitor.check_dt >= delta)
             .order_by(Monitor.check_dt)  # Сортируем по check_dt от нового к старому
             .all()
         )
+        # Преобразуем результаты в нужный формат
+        formatted_records = [
+            {
+                "check_dt": monitor_record.check_dt.isoformat() + "Z",  # Преобразуем в ISO 8601 формат
+                "is_ok": monitor_record.is_ok,
+                "code": monitor_record.code,
+                "response_time_ms": monitor_record.response_time_ms
+            }
+            for monitor_record in monitor_records
+        ]
+
     elif period in ['month', 'year']:
-        print(f"Period: {period}")
+        monitor_records = (
+            db.query(MonitorByDay)
+            .filter(MonitorByDay.site_id == site_id, MonitorByDay.check_dt >= delta)
+            .order_by(MonitorByDay.check_dt)
+            .all()
+        )
+        # Преобразуем результаты в нужный формат
+        formatted_records = [
+            {
+                "check_dt": monitor_record.check_dt.isoformat() + "Z",
+                "uptime": monitor_record.uptime,
+            }
+            for monitor_record in monitor_records
+        ]
+    else:
+        raise ValueError(f"Bad period {period}")
 
     if not monitor_records:
         return []
 
-    # Преобразуем результаты в нужный формат
-    formatted_records = [
-        {
-            "check_dt": monitor_record.check_dt.isoformat() + "Z",  # Преобразуем в ISO 8601 формат
-            "is_ok": monitor_record.is_ok,
-            "code": monitor_record.code,
-            "response_time_ms": monitor_record.response_time_ms
-        }
-        for monitor_record in monitor_records
-    ]
+
 
     return formatted_records
 

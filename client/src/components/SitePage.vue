@@ -11,22 +11,42 @@
       <v-btn value="year" @click="updatePeriod('year')">Year</v-btn>
     </v-btn-toggle>
 
-    <SiteAvailabilityChart :availabilityData="availabilityData" />
+    <component
+      :is="currentChartComponent"
+      :availabilityData="availabilityData"
+    />
   </v-container>
 </template>
 
 <script setup>
-import {ref, onMounted} from 'vue';
+import {ref, onMounted, computed} from 'vue';
 import {useRoute} from 'vue-router';
 import SiteAvailabilityChart from './SiteAvailabilityChart.vue';
+import SiteAvailabilityChartByDay from './SiteAvailabilityChartByDay.vue';
 import api from "../api";
 
 const route = useRoute();
 const siteId = route.params.id;
 const availabilityData = ref([]);
 const siteInfo = ref({});
+
+const period = ref("day"); // Значение по умолчанию
+
+
 const token = localStorage.getItem("token");
-const period = ref("week"); // Значение по умолчанию
+
+const currentChartComponent = computed(() => {
+  switch (period.value) {
+    case "day":
+    case "week":
+      return SiteAvailabilityChart;
+    case "month":
+    case "year":
+      return SiteAvailabilityChartByDay;
+    default:
+      return SiteAvailabilityChart;
+  }
+});
 
 // Функция для получения данных о доступности сайта
 const fetchAvailabilityData = async () => {
@@ -49,7 +69,7 @@ onMounted(fetchAvailabilityData);
 </script>
 
 <style scoped>
-/* Ваши стили для компонента */
+
 .v-btn-toggle {
   display: flex;
   gap: 8px;

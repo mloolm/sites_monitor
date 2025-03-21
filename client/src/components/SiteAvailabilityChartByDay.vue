@@ -19,7 +19,7 @@ const props = defineProps({
 });
 
 const formatDate = (dateString) => {
-  const options = { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false };
+  const options = { day: '2-digit', month: '2-digit', year: '2-digit', hour12: false };
   return new Date(dateString).toLocaleString('ru-RU', options).replace(',', '');
 };
 
@@ -30,9 +30,8 @@ const chartOptions = {
     y: {
       beginAtZero: true,
       min: 0,
-      max: 100,
       ticks: {
-        stepSize: 100,
+        stepSize: 10,
       },
     },
   },
@@ -41,18 +40,9 @@ const chartOptions = {
       callbacks: {
         label: function(tooltipItem) {
           const index = tooltipItem.dataIndex;
-          const availabilityValue = tooltipItem.dataset.data[index];
-          const availability = availabilityValue > 0 ? 'online' : 'offline';
-
-          const responseCode_val = props.availabilityData[index].code;
-          const responseCode = ((typeof responseCode_val=='undefined') || (responseCode_val === null)) ? '-': responseCode_val
-
-          const RespTime_val =  props.availabilityData[index].response_time_ms;
-          const RespTime = ((RespTime_val === null) || (RespTime_val === 0 )) ? '-': RespTime_val + 'ms'
+          const uptimeValue = tooltipItem.dataset.data[index];
           return [
-            `Status: ${availability}`,
-            `Response Code: ${responseCode}`,
-            `Response Time: ${RespTime}`
+            `Uptime: ${uptimeValue}%`,
           ];
         }
       }
@@ -65,19 +55,11 @@ const chartData = ref({
   labels: [],
   datasets: [
     {
-      label: 'Availability',
+      label: 'Uptime (%)',
       data: [],
       borderColor: 'rgba(75, 192, 192, 1)',
       backgroundColor: 'rgba(75, 192, 192, 0.2)',
       fill: true,
-    },
-    {
-      label: 'Response Time (ms)',
-      data: [],
-      borderColor: 'rgba(255, 99, 132, 1)',
-      backgroundColor: 'rgba(255, 99, 132, 0.2)',
-      fill: false,
-      yAxisID: 'y1', // Привязываем ко второй оси Y
     },
   ],
 });
@@ -87,13 +69,11 @@ watch(
   (newData) => {
     if (newData && newData.length > 0) {
 
-      chartData.value.labels = newData.map(item => formatDate(item.check_dt));
-      chartData.value.datasets[0].data = newData.map(item => item.is_ok ? 100 : 0);
-      chartData.value.datasets[1].data = newData.map(item => item.response_time_ms || null); // Время ответа
+      chartData.value.labels = newData.map(item => formatDate(item.uptime));
+      chartData.value.datasets[0].data = newData.map(item => item.uptime);
     } else {
       chartData.value.labels = [];
       chartData.value.datasets[0].data = [];
-      chartData.value.datasets[1].data = [];
     }
   },
   { immediate: true }
