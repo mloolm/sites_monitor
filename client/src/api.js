@@ -98,7 +98,27 @@ export default {
             headers: { Authorization: `Bearer ${token}` }
         }
     );
+  },
+
+  getNoticesTotalPages(token){
+    return apiClient.get(
+        '/notifications-page-count',
+        {
+            headers: { Authorization: `Bearer ${token}` }
+        }
+    );
+
+  },
+  getNotices(token, page=1)
+  {
+    return apiClient.get(
+        '/notifications/'+page,
+        {
+            headers: { Authorization: `Bearer ${token}` }
+        }
+    );
   }
+
 
 
 };

@@ -1,6 +1,8 @@
 from pyexpat.errors import messages
 from typing import List, Dict
 from sqlalchemy.orm import Session
+from sqlalchemy import desc
+from math import ceil
 from models.notification_auth import NotificationAuth
 from models.notification import Notification
 from core.config import settings
@@ -69,4 +71,33 @@ def set_provider(db: Session, user: User, provider: str, endpoint: str):
         return True
 
     return True
+
+def get_total_pages(db: Session, user: User, on_page: int = 30):
+    total_notifications = db.query(Notification).filter(Notification.user_id == user.id).count()
+    total_pages = ceil(total_notifications / on_page)
+    return total_pages
+
+def get_notifications(db: Session, user: User, page: int = 1, on_page: int = 30):
+    """
+    Получает уведомления для пользователя с пагинацией и сортировкой по дате создания.
+
+    :param db: Сессия базы данных.
+    :param user: Объект пользователя (User).
+    :param page: Номер текущей страницы (по умолчанию 1).
+    :param on_page: Количество элементов на странице (по умолчанию 30).
+    """
+
+    page = int(page)
+
+    # Выполняем запрос с пагинацией и сортировкой по created_at (от самых ранних к самым поздним)
+    notifications = (
+        db.query(Notification)
+        .filter(Notification.user_id == user.id)
+        .order_by(Notification.created_at.desc())
+        .offset((page - 1) * on_page)
+        .limit(on_page)
+        .all()
+    )
+
+    return notifications
 

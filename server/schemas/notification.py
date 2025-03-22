@@ -16,3 +16,9 @@ class NotificationResponse(NotificationCreate):
 
 class SendMessage(BaseModel):
     message: str
+
+
+class NotificationItem(BaseModel):
+    title: str
+    message: str
+    date: datetime

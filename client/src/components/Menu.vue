@@ -53,6 +53,7 @@ onMounted(async () => {
 
 const menuItems = ref([
   { icon: 'home', route: '/dashboard' },
+  { icon: 'settings', route: '/settings' },
   { icon: 'notifications', route: '/noty' },
 
 ]);

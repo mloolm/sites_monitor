@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from db.session import get_db
 from db.crud import create_site, get_site, get_sites, get_user_by_login, delete_site
 from db.monitor import get_sites_health, get_site_data
-from db.notifications import get_user_notification_endpoints, add_notification, set_provider
+from db.notifications import get_user_notification_endpoints, add_notification, set_provider, get_notifications, get_total_pages
 from db.sender import send_message
 from schemas.site import SiteCreate, SiteDelete, Site as SiteSchema, SiteHealth
 from schemas.user import User as UserSchema
@@ -17,6 +17,7 @@ from models.notification_auth import NotificationAuth
 from models.user import User
 from pwa.pwa_manager import PwaManager
 from schemas.pwa import PwaSubscribe
+from schemas.notification import NotificationItem
 import json
 
 
@@ -24,9 +25,41 @@ router = APIRouter(
     dependencies=[Depends(get_current_user)]  # Применяем ко всем маршрутам
 )
 
+
+@router.get("/notifications-page-count")
+def get_notification_total_pages_count(
+    current_user = Depends(get_current_user),  # Получаем текущего пользователя
+    db: Session = Depends(get_db)
+):
+    """
+    Возвращает количество страниц уведомлений
+    """
+
+    if not current_user:
+        raise HTTPException(status_code=401, detail="User not authorised")
+
+    return get_total_pages(db, current_user)
+
+
+@router.get("/notifications/{page}")
+def get_notification(
+    page=1,
+    current_user = Depends(get_current_user),  # Получаем текущего пользователя
+    db: Session = Depends(get_db)
+):
+    """
+    Возвращает уведомления
+    """
+
+    if not current_user:
+        raise HTTPException(status_code=401, detail="User not authorised")
+
+    return get_notifications(db,current_user,page)
+
+
 @router.get("/user-data", response_model=UserSchema)
 def get_user_data(
-    current_user: str = Depends(get_current_user),  # Получаем текущего пользователя
+    current_user = Depends(get_current_user),  # Получаем текущего пользователя
     db: Session = Depends(get_db)
 ):
     """
@@ -41,7 +74,7 @@ def get_user_data(
 
 @router.get("/get-telegram-auth-code")
 def get_telegram_auth_code(
-    current_user: str = Depends(get_current_user),
+    current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     if not current_user:
