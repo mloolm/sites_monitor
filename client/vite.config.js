@@ -10,24 +10,26 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'My Awesome App',
-        short_name: 'AwesomeApp',
-        description: 'A Progressive Web App built with Vite and Vue',
+        name: 'Sites monitoring',
+        short_name: 'SiteMon',
+        description: 'Website monitoring - availability, response time, SSL certificate, problem notifications, reminders about SSL certificate expiration',
         theme_color: '#4DBA87',
         background_color: '#ffffff',
         display: 'standalone',
         icons: [
           {
-            src: '/img/icons/android-chrome-192x192.png',
+            src: '/img/icons/web-app-manifest-192x192.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: '/img/icons/android-chrome-512x512.png',
+            src: '/img/icons/web-app-manifest-512x512.png',
             sizes: '512x512',
             type: 'image/png'
           }
         ]
+
+
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,png,jpg,svg}'],

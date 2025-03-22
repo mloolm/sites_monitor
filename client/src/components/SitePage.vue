@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <h3>Site Details</h3>
-    <p><b>{{ siteInfo.url }}</b></p>
+    <p class="mb-3"><b>{{ siteInfo.url }}</b></p>
 
     <!-- Кнопки выбора периода -->
     <v-btn-toggle v-model="period" mandatory class="mb-4">

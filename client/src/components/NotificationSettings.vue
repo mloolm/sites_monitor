@@ -1,15 +1,15 @@
 <template>
   <v-container>
+    <h4>Notification Settings</h4>
     <v-card class="pa-4">
-      <v-card-title>Notification Settings</v-card-title>
 
       <!-- Telegram -->
-      <v-card-subtitle>Auth code for Telegram</v-card-subtitle>
-      <v-card-text>
+      <v-card-text align="center" v-if="tlgAvailable"><b>Auth code for Telegram</b></v-card-text>
+      <v-card-text v-if="tlgAvailable">
         <v-row align="center">
           <v-col cols="12" sm="8">
             <v-text-field
-                variant="underlined"
+              variant="underlined"
               v-model="telegramToken"
               label="Press 'Get code' to generate code"
               readonly
@@ -18,98 +18,121 @@
               :loading="isLoading"
               :error-messages="errorMessage"
             ></v-text-field>
+            <p class="mt-3">
+              To authorize and receive notifications in the Telegram bot, enter the command above. The code is valid for 10 minutes. You can always generate a new one.
+            </p>
           </v-col>
-          <v-col cols="12" sm="4" class="text-center">
+          <v-col cols="12" sm="4" class="text-center" >
             <v-btn
               color="primary"
               @click="fetchTelegramToken"
               :disabled="isLoading"
+              size="small"
             >
               Get code
             </v-btn>
           </v-col>
         </v-row>
       </v-card-text>
-    </v-card>
-    <!-- Push -->
-    <v-card class="pa-4">
-    <v-row align="center">
-      <v-col cols="12">
-         <v-btn
-        color="primary"
-        @click="subscribeToPush"
-        :disabled="isLoading"
-        >
-          Subscribe to Push
-        </v-btn>
-      </v-col>
-    </v-row>
-    </v-card>
-    <v-card class="pa-4">
 
- <v-row align="center">
-      <v-col cols="12">
-        <v-btn
-        color="primary"
-        @click="sendTestMessage"
-        :disabled="isLoading"
-        >
-          Send test message
-        </v-btn>
-      </v-col>
-    </v-row>
+      <!-- Блок с пояснением, если Telegram недоступен -->
+      <v-card-text v-else>
+        <v-alert type="info" variant="outlined">
+          Telegram notifications are not available. To enable notifications, you need to add the
+          Telegram bot API key to the settings (.env file), where the notifications will be sent.
+        </v-alert>
+      </v-card-text>
+    </v-card>
+
+    <!-- Push -->
+    <v-card v-if="pushAvailable" class="pa-4">
+      <v-row >
+        <v-col cols="12" align="center">
+          <v-card-text align="center"><b>Subscribe (or update your subscription) to push notifications</b></v-card-text>
+
+          <v-btn
+            color="warning"
+            @click="subscribeToPush"
+            :disabled="isLoading"
+          >
+            Subscribe to Push
+          </v-btn>
+        </v-col>
+      </v-row>
+    </v-card>
+    <v-card v-else>
+      <v-row>
+          <v-col cols="12">
+              <v-alert type="info" variant="outline">
+                Service worker is not loaded or is malfunctioning. Push notifications are not available. Please contact support
+              </v-alert>
+          </v-col>
+      </v-row>
+    </v-card>
+
+    <v-card v-if="pushAvailable || tlgAvailable" class="pa-4">
+      <v-row >
+        <v-col cols="12" align="center">
+          <v-btn
+            color="success"
+            @click="sendTestMessage"
+            :disabled="isLoading"
+          >
+            Send test message
+          </v-btn>
+        </v-col>
+      </v-row>
     </v-card>
   </v-container>
-
-
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import {ref, onMounted} from 'vue';
 import api from '../api';
-import {useRouter} from "vue-router";
+import {useRouter} from 'vue-router';
+
 const router = useRouter();
 const message = ref("");
 const telegramToken = ref(""); // Переменная для хранения кода Telegram
 const isLoading = ref(false); // Для отображения состояния загрузки
 const errorMessage = ref(""); // Для отображения ошибок
-
+const tlgAvailable = ref(false); // Доступность Telegram
+const pushAvailable = ref(true);
 const token = localStorage.getItem("token");
 
-function sendTestMessage(){
-  const message = 'Test message from site monitor!'
-  api.sendNotyMessage(token, message)
+function sendTestMessage() {
+  const message = 'Test message from site monitor!';
+  api.sendNotyMessage(token, message);
 }
 
 async function subscribeToPush() {
-    if(!token) return;
+  if (!token) return;
 
-    if (!('serviceWorker' in navigator))
-    {
-      console.error('Service worker not loaded')
-      return;
-    }
+  if (!('serviceWorker' in navigator)) {
+    pushAvailable.value = false;
+    console.error('Service worker not loaded');
+    return;
+  } else {
+    pushAvailable.value = true;
+  }
 
+  let vapid_pub = await api.getVapidKey(token);
 
-    let vapid_pub = await api.getVapidKey(token);
+  if (typeof vapid_pub.data == 'undefined') {
+    pushAvailable.value = false;
+    console.error('Error retrieving public key');
+    return;
+  }
 
-    if(typeof vapid_pub.data == 'undefined')
-    {
-        console.error('Error retrieving public key');
-        return
-    }
+  const registration = await navigator.serviceWorker.ready;
+  const subscription = await registration.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: vapid_pub.data,
+  });
 
-    const registration = await navigator.serviceWorker.ready;
-    const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: vapid_pub.data
-    });
-
-    console.log("Push подписка:", JSON.stringify(subscription));
-    api.subscribePWA(token, JSON.stringify(subscription))
+  console.log("Push подписка:", JSON.stringify(subscription));
+  api.subscribePWA(token, JSON.stringify(subscription));
 }
-
-
 
 // Функция для получения кода Telegram
 function fetchTelegramToken() {
@@ -133,15 +156,11 @@ function fetchTelegramToken() {
   }
 }
 
-
-
- onMounted(async () => {
-
+onMounted(async () => {
   if (!token) {
     router.push("/login");
     return;
   }
-
 
   try {
     const response = await api.getUserData(token);
@@ -152,14 +171,24 @@ function fetchTelegramToken() {
 
   try {
     const providers = await api.getNotificationData(token);
-    console.log(providers)
-
-
+    if (typeof providers.data != 'undefined') {
+      if (typeof providers.data.providers_available != 'undefined') {
+        for (let i in providers.data.providers_available) {
+          if ((i == 'telegram') && providers.data.providers_available[i]) {
+            tlgAvailable.value = true;
+          } else if (i == 'telegram') {
+            tlgAvailable.value = false;
+          }
+        }
+      }
+      console.log('Providers.data', providers.data);
+    } else {
+      console.log('Providers', providers);
+    }
   } catch (err) {
     console.error("Ошибка при получении данных о провайдерах уведомлений:", err);
   }
 });
-
 </script>
 
 <style scoped>
