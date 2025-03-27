@@ -3,34 +3,34 @@
     <h2 class="text-h4 mb-6 text-center">Вход</h2>
     <v-form @submit.prevent="handleLogin" ref="form">
       <v-text-field
-        v-model="username"
-        label="Логин"
-        placeholder="Введите логин"
-        required
-        :rules="[rules.required]"
-        variant="outlined"
-        clearable
+          v-model="username"
+          label="Login"
+          placeholder="Enter login"
+          required
+          :rules="[rules.required]"
+          variant="outlined"
+          clearable
       ></v-text-field>
 
       <v-text-field
-        v-model="password"
-        label="Пароль"
-        placeholder="Введите пароль"
-        type="password"
-        required
-        :rules="[rules.required]"
-        variant="outlined"
-        clearable
+          v-model="password"
+          label="Password"
+          placeholder="Enter password"
+          type="password"
+          required
+          :rules="[rules.required]"
+          variant="outlined"
+          clearable
       ></v-text-field>
 
       <v-btn
-        type="submit"
-        color="primary"
-        block
-        :loading="isLoading"
-        :disabled="!isFormValid"
+          type="submit"
+          color="primary"
+          block
+          :loading="isLoading"
+          :disabled="!isFormValid"
       >
-        Войти
+        Login
       </v-btn>
 
       <p v-if="error" class="text-red mt-4">{{ error }}</p>
@@ -39,9 +39,9 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import {ref} from "vue";
 import api from "../api";
-import { useRouter } from "vue-router";
+import {useRouter} from "vue-router";
 
 const username = ref("");
 const password = ref("");

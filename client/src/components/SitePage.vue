@@ -12,14 +12,14 @@
     </v-btn-toggle>
 
     <component
-      :is="currentChartComponent"
-      :availabilityData="availabilityData"
+        :is="currentChartComponent"
+        :availabilityData="availabilityData"
     />
   </v-container>
 </template>
 
 <script setup>
-import {ref, onMounted, computed} from 'vue';
+import {computed, onMounted, ref} from 'vue';
 import {useRoute} from 'vue-router';
 import SiteAvailabilityChart from './SiteAvailabilityChart.vue';
 import SiteAvailabilityChartByDay from './SiteAvailabilityChartByDay.vue';

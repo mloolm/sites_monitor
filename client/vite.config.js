@@ -10,10 +10,10 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'Sites monitoring',
+        name: 'Sites monitoring app',
         short_name: 'SiteMon',
         description: 'Website monitoring - availability, response time, SSL certificate, problem notifications, reminders about SSL certificate expiration',
-        theme_color: '#4DBA87',
+        theme_color: 'rgba(13,110,253,0.12)',
         background_color: '#ffffff',
         display: 'standalone',
         icons: [

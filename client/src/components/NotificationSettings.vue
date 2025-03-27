@@ -9,25 +9,26 @@
         <v-row align="center">
           <v-col cols="12" sm="8">
             <v-text-field
-              variant="underlined"
-              v-model="telegramToken"
-              label="Press 'Get code' to generate code"
-              readonly
-              outlined
-              dense
-              :loading="isLoading"
-              :error-messages="errorMessage"
+                variant="underlined"
+                v-model="telegramToken"
+                label="Press 'Get code' to generate code"
+                readonly
+                outlined
+                dense
+                :loading="isLoading"
+                :error-messages="errorMessage"
             ></v-text-field>
             <p class="mt-3">
-              To authorize and receive notifications in the Telegram bot, enter the command above. The code is valid for 10 minutes. You can always generate a new one.
+              To authorize and receive notifications in the Telegram bot, enter the command above. The code is valid for
+              10 minutes. You can always generate a new one.
             </p>
           </v-col>
-          <v-col cols="12" sm="4" class="text-center" >
+          <v-col cols="12" sm="4" class="text-center">
             <v-btn
-              color="primary"
-              @click="fetchTelegramToken"
-              :disabled="isLoading"
-              size="small"
+                color="primary"
+                @click="fetchTelegramToken"
+                :disabled="isLoading"
+                size="small"
             >
               Get code
             </v-btn>
@@ -46,14 +47,14 @@
 
     <!-- Push -->
     <v-card v-if="pushAvailable" class="pa-4">
-      <v-row >
+      <v-row>
         <v-col cols="12" align="center">
           <v-card-text align="center"><b>Subscribe (or update your subscription) to push notifications</b></v-card-text>
 
           <v-btn
-            color="warning"
-            @click="subscribeToPush"
-            :disabled="isLoading"
+              color="warning"
+              @click="subscribeToPush"
+              :disabled="isLoading"
           >
             Subscribe to Push
           </v-btn>
@@ -62,21 +63,22 @@
     </v-card>
     <v-card v-else>
       <v-row>
-          <v-col cols="12">
-              <v-alert type="info" variant="outline">
-                Service worker is not loaded or is malfunctioning. Push notifications are not available. Please contact support
-              </v-alert>
-          </v-col>
+        <v-col cols="12">
+          <v-alert type="info" variant="outline">
+            Service worker is not loaded or is malfunctioning. Push notifications are not available. Please contact
+            support
+          </v-alert>
+        </v-col>
       </v-row>
     </v-card>
 
     <v-card v-if="pushAvailable || tlgAvailable" class="pa-4">
-      <v-row >
+      <v-row>
         <v-col cols="12" align="center">
           <v-btn
-            color="success"
-            @click="sendTestMessage"
-            :disabled="isLoading"
+              color="success"
+              @click="sendTestMessage"
+              :disabled="isLoading"
           >
             Send test message
           </v-btn>
@@ -87,7 +89,7 @@
 </template>
 
 <script setup>
-import {ref, onMounted} from 'vue';
+import {onMounted, ref} from 'vue';
 import api from '../api';
 import {useRouter} from 'vue-router';
 

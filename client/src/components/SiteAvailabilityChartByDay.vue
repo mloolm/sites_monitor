@@ -1,13 +1,22 @@
 <template>
   <div class="site-chart">
-    <Line :chartData="chartData" :chartOptions="chartOptions" />
+    <Line :chartData="chartData" :chartOptions="chartOptions"/>
   </div>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
-import { Line } from 'vue-chartjs';
-import { Chart as ChartJS, Title, Tooltip, Legend, LineElement, PointElement, LinearScale, CategoryScale } from 'chart.js';
+import {ref, watch} from 'vue';
+import {Line} from 'vue-chartjs';
+import {
+  CategoryScale,
+  Chart as ChartJS,
+  Legend,
+  LinearScale,
+  LineElement,
+  PointElement,
+  Title,
+  Tooltip
+} from 'chart.js';
 
 ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, LinearScale, CategoryScale);
 
@@ -19,7 +28,7 @@ const props = defineProps({
 });
 
 const formatDate = (dateString) => {
-  const options = { day: '2-digit', month: '2-digit', year: '2-digit', hour12: false };
+  const options = {day: '2-digit', month: '2-digit', year: '2-digit', hour12: false};
   return new Date(dateString).toLocaleString('ru-RU', options).replace(',', '');
 };
 
@@ -38,7 +47,7 @@ const chartOptions = {
   plugins: {
     tooltip: {
       callbacks: {
-        label: function(tooltipItem) {
+        label: function (tooltipItem) {
           const index = tooltipItem.dataIndex;
           const uptimeValue = tooltipItem.dataset.data[index];
           return [
@@ -65,18 +74,18 @@ const chartData = ref({
 });
 
 watch(
-  () => props.availabilityData,
-  (newData) => {
-    if (newData && newData.length > 0) {
+    () => props.availabilityData,
+    (newData) => {
+      if (newData && newData.length > 0) {
 
-      chartData.value.labels = newData.map(item => formatDate(item.uptime));
-      chartData.value.datasets[0].data = newData.map(item => item.uptime);
-    } else {
-      chartData.value.labels = [];
-      chartData.value.datasets[0].data = [];
-    }
-  },
-  { immediate: true }
+        chartData.value.labels = newData.map(item => formatDate(item.uptime));
+        chartData.value.datasets[0].data = newData.map(item => item.uptime);
+      } else {
+        chartData.value.labels = [];
+        chartData.value.datasets[0].data = [];
+      }
+    },
+    {immediate: true}
 );
 
 

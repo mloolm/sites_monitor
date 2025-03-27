@@ -1,38 +1,39 @@
 <template>
- <v-container>
+  <v-container>
     <v-card>
       <v-card-title>Sites list</v-card-title>
       <v-list>
         <v-list-item
-          v-for="site in siteStore.sites"
-          :key="site.id"
+            v-for="site in siteStore.sites"
+            :key="site.id"
 
-          @click="goToSite(site.id)"
+            @click="goToSite(site.id)"
         >
           <v-list-item-content class="d-flex align-center justify-space-between">
             <v-list-item-title class="text-body-1">
               {{ site.url }}
 
               <div class="mb-1">
-              <v-chip
-                class="ml-0"
-                :class="getHealthClass(site.health)"
-                size="x-small"
-                text-color="black"
-              >
-                {{ site.health }}%
-              </v-chip>
+                <v-chip
+                    class="ml-0"
+                    :class="getHealthClass(site.health)"
+                    size="x-small"
+                    text-color="black"
+                >
+                  {{ site.health }}%
+                </v-chip>
 
-             <v-chip
-                v-if="site.url.startsWith('https')"
-                class="ml-2"
-                :class="getSSLClass(site.ssl)"
-                text-color="black"
-                size="x-small"
-              >
-                SSL valid to {{ site.ssl ? new Date(site.ssl).toISOString().slice(0, 10).split('-').reverse().join('.') : '-' }}
+                <v-chip
+                    v-if="site.url.startsWith('https')"
+                    class="ml-2"
+                    :class="getSSLClass(site.ssl)"
+                    text-color="black"
+                    size="x-small"
+                >
+                  SSL valid to
+                  {{ site.ssl ? new Date(site.ssl).toISOString().slice(0, 10).split('-').reverse().join('.') : '-' }}
 
-              </v-chip>
+                </v-chip>
 
               </div>
 
@@ -53,28 +54,29 @@
     </v-card>
   </v-container>
 
-    <!-- Диалоговое окно подтверждения -->
-    <v-dialog v-model="deleteDialog" max-width="400">
-      <v-card>
-        <v-card-title>Подтвердите удаление</v-card-title>
-        <v-card-text>
-          Вы действительно хотите удалить сайт <strong>{{ siteToDelete?.url }}</strong>?
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn text @click="closeDeleteDialog">Отмена</v-btn>
-          <v-btn color="error" @click="confirmDelete">Удалить</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+  <!-- Диалоговое окно подтверждения -->
+  <v-dialog v-model="deleteDialog" max-width="400">
+    <v-card>
+      <v-card-title>Подтвердите удаление</v-card-title>
+      <v-card-text>
+        Вы действительно хотите удалить сайт <strong>{{ siteToDelete?.url }}</strong>?
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn text @click="closeDeleteDialog">Отмена</v-btn>
+        <v-btn color="error" @click="confirmDelete">Удалить</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useSiteStore } from '../stores/siteStore';
+import {onMounted, ref} from 'vue';
+import {useSiteStore} from '../stores/siteStore';
 import api from '../api';
 import {useRouter} from "vue-router";
+
 const siteStore = useSiteStore(); // Получаем доступ к хранилищу
 const token = localStorage.getItem("token");
 const router = useRouter();
@@ -156,7 +158,7 @@ const goToSite = (siteId) => {
   background-color: #d4edda; /* Зеленый цвет для статуса OK */
 }
 
-.warning, .ssl-warning  {
+.warning, .ssl-warning {
   background-color: #fff3cd; /* Желтый цвет для статуса Warning */
 }
 

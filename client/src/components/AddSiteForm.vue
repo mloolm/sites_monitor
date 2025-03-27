@@ -1,25 +1,23 @@
 <template>
   <v-container>
     <b class=" mb-4">Add site</b>
-
     <v-form @submit.prevent="addSite">
       <v-text-field
-        v-model="newSiteUrl"
-        label="Enter site URL"
-        placeholder="https://example.com"
-        required
-        :rules="[urlRules.required, urlRules.isValidUrl]"
-         variant="underlined"
-        clearable
+          v-model="newSiteUrl"
+          label="Enter site URL"
+          placeholder="https://example.com"
+          required
+          :rules="[urlRules.required, urlRules.isValidUrl]"
+          variant="underlined"
+          clearable
       ></v-text-field>
-
       <v-btn class="float-end" type="submit" color="primary" :disabled="!isUrlValid">Add site</v-btn>
     </v-form>
   </v-container>
 </template>
 
 <script setup>
-import {ref, computed} from 'vue';
+import {computed, ref} from 'vue';
 import api from "../api";
 import {useSiteStore} from '../stores/siteStore'; // Импортируем хранилище
 
@@ -57,4 +55,3 @@ async function addSite() {
   }
 }
 </script>
-

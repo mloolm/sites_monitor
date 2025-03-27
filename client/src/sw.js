@@ -1,12 +1,12 @@
 import { precacheAndRoute } from 'workbox-precaching';
 
 self.addEventListener('push', (event) => {
-  console.log('Получено push-уведомление');
+  console.log('New push-notice received');
   if (!event.data) return;
 
   const data = event.data.json();
   event.waitUntil(
-    self.registration.showNotification(data.title || 'Новое уведомление', {
+    self.registration.showNotification(data.title || 'New notice', {
       body: data.body || 'Сообщение без текста',
       icon: '/img/icons/android-chrome-192x192.png',
       badge: '/img/icons/android-chrome-512x512.png',

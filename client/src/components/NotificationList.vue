@@ -1,22 +1,21 @@
 <template>
   <v-container class="notification-container">
     <h2 class="text-center">Уведомления</h2>
-
-    <!-- Верхняя пагинация -->
+    <!-- top pagination -->
     <div v-if="total_pages > 1" class="pagination top-pagination">
       <v-pagination
-        v-model="current_page"
-        :length="total_pages"
-        :total-visible="5"
-        @update:modelValue="changePage"
+          v-model="current_page"
+          :length="total_pages"
+          :total-visible="5"
+          @update:modelValue="changePage"
       ></v-pagination>
     </div>
 
-    <!-- Загрузка или ошибка -->
+    <!-- Loading or error -->
     <v-skeleton-loader v-if="loading" type="list-item-avatar-three-line" :loading="loading"></v-skeleton-loader>
     <v-alert v-else-if="error" type="error">{{ error }}</v-alert>
     <div v-else>
-      <!-- Список уведомлений -->
+      <!-- Notices list -->
       <v-list v-if="notifications.length > 0">
         <v-list-item v-for="(notice, index) in notifications" :key="index" class="notification-item">
           <v-list-item-content>
@@ -26,37 +25,37 @@
           </v-list-item-content>
         </v-list-item>
       </v-list>
-      <!-- Если уведомлений нет -->
-      <v-alert v-else type="info">Нет новых уведомлений.</v-alert>
+      <!-- If no notices -->
+      <v-alert v-else type="info">No notices yet</v-alert>
     </div>
 
-    <!-- Нижняя пагинация -->
+    <!-- bottom pagination -->
     <div v-if="total_pages > 1" class="pagination bottom-pagination">
       <v-pagination
-        v-model="current_page"
-        :length="total_pages"
-        :total-visible="5"
-        @update:modelValue="changePage"
+          v-model="current_page"
+          :length="total_pages"
+          :total-visible="5"
+          @update:modelValue="changePage"
       ></v-pagination>
     </div>
   </v-container>
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
+import {onMounted, ref} from 'vue';
 import api from '../api';
 
 export default {
   name: 'NotificationList',
   setup() {
     const token = localStorage.getItem('token');
-    const notifications = ref([]); // Реактивный массив для хранения уведомлений
-    const loading = ref(true); // Флаг загрузки
-    const error = ref(null); // Переменная для хранения ошибок
-    const total_pages = ref(0); // Общее количество страниц
-    const current_page = ref(1); // Текущая страница
+    const notifications = ref([]);
+    const loading = ref(true);
+    const error = ref(null);
+    const total_pages = ref(0);
+    const current_page = ref(1);
 
-    // Функция для форматирования даты
+    // Date formatting function
     const formatDate = (dateString) => {
       const date = new Date(dateString);
       return date.toLocaleString(); // Форматируем дату в удобочитаемый вид
