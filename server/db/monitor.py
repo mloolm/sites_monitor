@@ -1,20 +1,16 @@
-from datetime import datetime, timedelta
 from sqlalchemy import text
-
 from models import MonitorByDay
 from models.monitor import Monitor
 from sqlalchemy.orm import Session
-
-from sqlalchemy import desc
 from datetime import datetime, timedelta
 
 def get_sites_health(db: Session, sites):
     site_ids = [site.id for site in sites]
 
-    # Определяем дату начала последней недели
+    # Determines the start date of the last week.
     last_week = datetime.utcnow() - timedelta(days=7)
 
-    # SQL-запрос для подсчета проверок и доступности
+    # SQL query to count checks and availability.
     sql = text("""
         SELECT 
             site_id, 
@@ -29,10 +25,9 @@ def get_sites_health(db: Session, sites):
             site_id
     """)
 
-    # Выполняем запрос
     result = db.execute(sql, {"site_ids": tuple(site_ids), "last_week": last_week}).fetchall()
 
-    # Подсчитываем процент доступности для каждого сайта
+    # Calculates the availability percentage for each website.
     health_data = {}
     for row in result:
         site_id = row.site_id
@@ -45,7 +40,7 @@ def get_sites_health(db: Session, sites):
         }
 
 
-    #SSL сертиикаты
+    # SSL certificates.
     sql = text("""WITH ranked AS (
             SELECT *,
                    ROW_NUMBER() OVER (PARTITION BY site_id ORDER BY check_dt DESC) AS rn
@@ -59,10 +54,8 @@ def get_sites_health(db: Session, sites):
     if ssl_state:
         for row in ssl_state:
             health_data[row.site_id]['ssl'] = row.valid_to
-
-    print (health_data)
-
     return health_data
+
 
 def get_site_data(db: Session, site_id:int, period:str='week'):
     monitor_records = None
@@ -82,13 +75,13 @@ def get_site_data(db: Session, site_id:int, period:str='week'):
         monitor_records = (
             db.query(Monitor)
             .filter(Monitor.site_id == site_id, Monitor.check_dt >= delta)
-            .order_by(Monitor.check_dt)  # Сортируем по check_dt от нового к старому
+            .order_by(Monitor.check_dt)
             .all()
         )
-        # Преобразуем результаты в нужный формат
+        # Converts the results to the required format.
         formatted_records = [
             {
-                "check_dt": monitor_record.check_dt.isoformat() + "Z",  # Преобразуем в ISO 8601 формат
+                "check_dt": monitor_record.check_dt.isoformat() + "Z",  # Converts to ISO 8601 format.
                 "is_ok": monitor_record.is_ok,
                 "code": monitor_record.code,
                 "response_time_ms": monitor_record.response_time_ms
@@ -103,7 +96,7 @@ def get_site_data(db: Session, site_id:int, period:str='week'):
             .order_by(MonitorByDay.check_dt)
             .all()
         )
-        # Преобразуем результаты в нужный формат
+        # Converts the results to the required format.
         formatted_records = [
             {
                 "check_dt": monitor_record.check_dt.isoformat() + "Z",
@@ -117,8 +110,4 @@ def get_site_data(db: Session, site_id:int, period:str='week'):
     if not monitor_records:
         return []
 
-
-
     return formatted_records
-
-

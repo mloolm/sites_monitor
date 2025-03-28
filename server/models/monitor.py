@@ -13,5 +13,5 @@ class Monitor(Base):
     code = Column(Integer, index=True)
     response_time_ms = Column(Integer, nullable=True)
 
-    # Связь с таблицей Site
+    # Connection with Site
     owner = relationship("Site", back_populates="monitor")

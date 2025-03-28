@@ -10,5 +10,5 @@ class MonitorByDay(Base):
     uptime = Column(Numeric(precision=5, scale=2), default=False)
     check_dt = Column(DateTime)
 
-    # Связь с таблицей Site
+    # Connection with Site
     owner = relationship("Site", back_populates="monitor_by_day")

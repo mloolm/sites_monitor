@@ -1,12 +1,10 @@
-from pywebpush import webpush, WebPushException
 import os
-import json
 import hashlib
 import time
 import base64
 import ecdsa
 from jose import jws
-from core.config import settings
+
 
 class PwaManager:
 
@@ -33,39 +31,38 @@ class PwaManager:
     @staticmethod
     def gen_keys():
         rewrite_pub =False
-        # Проверяем, существует ли файл с ключом
+        # Checks if the file with the key exists.
         key_file = "keys/vapid_private_key.pem"
         key_dir = os.path.dirname(key_file)
 
-        # Создаем директорию, если она не существует
+        # Creates the directory if it does not exist.
         if not os.path.exists(key_dir):
             os.makedirs(key_dir)
 
         if os.path.exists(key_file):
-            # Загружаем ключ из файла
+            # Loads the key from the file.
             with open(key_file, "rb") as f:
                 file_contents = f.read()
             my_key = ecdsa.SigningKey.from_pem(file_contents)
         else:
-            print('GEEEN', flush=True)
             rewrite_pub = True
-            # Генерируем новый ключ, если файл не найден
+            # Generates a new key if the file is not found.
             my_key = ecdsa.SigningKey.generate(curve=ecdsa.NIST256p)
-            # Сохраняем ключ в файл
+            # Saves the key to a file.
             with open(key_file, "wb") as f:
                 f.write(my_key.to_pem())
 
-        # Стандартный заголовок для всех объектов VAPID
+        # Standard header for all VAPID objects.
         header = {"typ": "JWT", "alg": "ES256"}
 
-        # Пользовательские утверждения
+        # Custom claims.
         claims = {
             "aud": "https://updates.push.services.mozilla.com",
             "exp": int(time.time()) + 86400,
             "sub": "mailto:" + PwaManager.get_claim_email(),
         }
 
-        # Создаем JWT и получаем публичный ключ
+        # Creates a JWT and retrieves the public key.
         (jwt, public_key) = PwaManager._make_jwt(header, claims, my_key)
 
         if isinstance(public_key, bytes):
@@ -91,13 +88,11 @@ class PwaManager:
 
     @staticmethod
     def get_public_key():
-        # return os.environ.get('VAPID_PUB')
         public, private = PwaManager.gen_keys()
         return public
 
     @staticmethod
     def get_private_key():
-        # return os.environ.get('VAPID_PRIVATE')
         public, private = PwaManager.gen_keys()
         return private
 
@@ -107,12 +102,9 @@ class PwaManager:
         endpoint = str(endpoint)
         m = hashlib.sha256()
         m.update(endpoint.encode('utf-8'))
-
         return m.hexdigest()
 
 
     @staticmethod
     def get_claim_email():
         return os.environ.get('CLAIMS_EMAIL')
-
-

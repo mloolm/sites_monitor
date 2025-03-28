@@ -14,5 +14,5 @@ class SSLCertificate(Base):
     valid_from = Column(DateTime)
     valid_to = Column(DateTime, index=True)
 
-    # Связь с таблицей Site
+    # Connection with Site
     owner = relationship("Site", back_populates="ssl_monitor")

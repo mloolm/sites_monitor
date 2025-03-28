@@ -1,8 +1,7 @@
-# server/api/routes.py
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from db.session import get_db
-from db.crud import create_site, get_site, get_sites, get_user_by_login, delete_site
+from db.crud import create_site, get_site, get_sites, delete_site
 from db.monitor import get_sites_health, get_site_data
 from db.notifications import get_user_notification_endpoints, add_notification, set_provider, get_notifications, get_total_pages
 from db.sender import send_message
@@ -10,14 +9,12 @@ from schemas.site import SiteCreate, SiteDelete, Site as SiteSchema, SiteHealth
 from schemas.user import User as UserSchema
 from typing import List
 from .auth import get_current_user
-from models.notification import Notification
-from schemas.notification import NotificationCreate, NotificationResponse, SendMessage
+from schemas.notification import SendMessage
 from core.config import settings
 from models.notification_auth import NotificationAuth
 from models.user import User
 from pwa.pwa_manager import PwaManager
 from schemas.pwa import PwaSubscribe
-from schemas.notification import NotificationItem
 import json
 
 
@@ -32,7 +29,7 @@ def get_notification_total_pages_count(
     db: Session = Depends(get_db)
 ):
     """
-    Возвращает количество страниц уведомлений
+    Returns the number of notification pages
     """
 
     if not current_user:
@@ -48,7 +45,7 @@ def get_notification(
     db: Session = Depends(get_db)
 ):
     """
-    Возвращает уведомления
+    Returns notifications
     """
 
     if not current_user:
@@ -63,7 +60,7 @@ def get_user_data(
     db: Session = Depends(get_db)
 ):
     """
-    Возвращает информацию о текущем пользователе.
+    Returns information about the current user.
     """
 
     if current_user:
@@ -77,6 +74,10 @@ def get_telegram_auth_code(
     current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    """
+    Returns the authorization code in the Telegram bot for the user.
+    """
+
     if not current_user:
         raise HTTPException(status_code=401, detail="User not authorised")
 
@@ -87,6 +88,10 @@ def get_user_noty(
     current_user: User = Depends(get_current_user),  # Получаем текущего пользователя
     db: Session = Depends(get_db)
 ):
+    """
+    Returns possible notification methods and information about the current notification settings.
+    """
+
     if not current_user:
         raise HTTPException(status_code=401, detail="User not authorised")
 
@@ -110,7 +115,9 @@ def send_message_from_client(
         db: Session = Depends(get_db),
         current_user = Depends(get_current_user)
 ):
-
+    """
+    Sends a notification from the client (used for sending test messages).
+    """
     notification = add_notification(db, current_user, message.message)
     res = send_message(db, notification)
 
@@ -121,14 +128,17 @@ def send_message_from_client(
 
 
 @router.post("/add-site", response_model=SiteSchema)
-def create_new_site(site: SiteCreate, db: Session = Depends(get_db), current_user: str = Depends(get_current_user)):
+def create_new_site(site: SiteCreate, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+    """
+    Adds a website.
+    """
     return create_site(db=db, user=current_user, url=site.url)
 
 @router.get("/sites/", response_model=List[SiteHealth])
-def sites_list(db: Session = Depends(get_db),current_user: str = Depends(get_current_user)):
+def sites_list(db: Session = Depends(get_db),current_user = Depends(get_current_user)):
     """
-        Возвращает список всех сайтов.
-        """
+    Returns a list of all added websites.
+    """
     sites = get_sites(db, current_user)
     if not sites:
         raise HTTPException(status_code=404, detail="No sites found")
@@ -150,7 +160,13 @@ def sites_list(db: Session = Depends(get_db),current_user: str = Depends(get_cur
     return ret
 
 @router.get("/sites/{site_id}/{period}")
-def read_site(site_id: int, period:str='week', db: Session = Depends(get_db),current_user: str = Depends(get_current_user)):
+def read_site(site_id: int, period:str='week',
+              db: Session = Depends(get_db),
+              current_user = Depends(get_current_user)
+              ):
+    """
+    Returns data for the website for the specified period (day, week, month, year)
+    """
     db_site = get_site(db, user=current_user, site_id=site_id)
     if db_site is None:
         raise HTTPException(status_code=404, detail="Site not found")
@@ -169,7 +185,10 @@ def read_site(site_id: int, period:str='week', db: Session = Depends(get_db),cur
     return ret
 
 @router.post("/delete-site")
-def del_site(site: SiteDelete, db: Session = Depends(get_db),current_user: str = Depends(get_current_user)):
+def del_site(site: SiteDelete, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+    """
+    Deletes a site
+    """
     res = delete_site(db, user=current_user, site_id=site.site_id)
     if not res:
         raise HTTPException(status_code=404, detail="Site not found")
@@ -178,21 +197,27 @@ def del_site(site: SiteDelete, db: Session = Depends(get_db),current_user: str =
 
 @router.get("/vapid-key")
 def get_vapid_key(db: Session = Depends(get_db)):
+    """
+    Returns the public VAPID key for push notifications.
+    """
     return PwaManager.get_public_key()
 
 @router.post('/subscribe')
 def subscribe_pwa(
     auth_data: PwaSubscribe,
     db: Session = Depends(get_db),
-    current_user: str = Depends(get_current_user)
+    current_user = Depends(get_current_user)
 ):
+    """
+    Subscription to push notifications.
+    """
     try:
-        # Декодируем JSON из строки
+
         data = json.loads(auth_data.data)
 
-        # Проверяем, что присутствуют все необходимые ключи
+        # Checks that all required keys are present.
         if not all(k in data for k in ["endpoint", "keys"]) or not all(k in data["keys"] for k in ["p256dh", "auth"]):
-            raise ValueError("Некорректные данные подписки")
+            raise ValueError("Invalid subscription data")
 
         # Формируем подписку обратно в JSON строку
         subscription_data = json.dumps({
@@ -203,8 +228,8 @@ def subscribe_pwa(
             }
         })
 
-        # Сохраняем подписку через set_provider
+        # Save Subscription
         return set_provider(db, current_user, "pwa", subscription_data)
 
     except (json.JSONDecodeError, ValueError):
-        raise HTTPException(status_code=400, detail="Некорректный формат данных")
+        raise HTTPException(status_code=400, detail="Invalid data format")

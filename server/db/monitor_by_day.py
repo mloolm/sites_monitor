@@ -6,30 +6,29 @@ from models.monitor_by_days import MonitorByDay
 from decimal import Decimal
 
 def aggregate_monitor_data(db: Session):
-    # Получаем текущую дату
     today = datetime.utcnow().date()
 
-    # Получаем все сайты
+    # Gets all websites.
     sites = db.query(Monitor.site_id).distinct().all()
 
     for site in sites:
         site_id = site.site_id
 
-        # Определяем последний обработанный день из таблицы MonitorByDay
+        # Determines the last processed day from the monitor_by_day table.
         last_processed_day = db.query(
             func.max(func.date(MonitorByDay.check_dt))
         ).filter(
             MonitorByDay.site_id == site_id
         ).scalar()
 
-        # Если нет обработанных дней, берем самую раннюю дату из таблицы Monitor
+        # If there are no processed days, take the earliest date from the monitor table.
         if not last_processed_day:
             earliest_date = db.query(func.min(func.date(Monitor.check_dt))).filter(
                 Monitor.site_id == site_id
             ).scalar()
             start_date = earliest_date or today
         else:
-            start_date = last_processed_day + timedelta(days=1)  # Начинаем со следующего дня
+            start_date = last_processed_day + timedelta(days=1)  # Start from the next day.
 
         aggregated_data = db.query(
             func.date(Monitor.check_dt).label("check_date"),
@@ -49,7 +48,7 @@ def aggregate_monitor_data(db: Session):
             func.date(Monitor.check_dt)
         ).all()
 
-        # Вставка новых данных в таблицу MonitorByDay
+        # Inserts new data into the monitor_by_day table.
         for data in aggregated_data:
             new_record = MonitorByDay(
                 site_id=site_id,
@@ -58,11 +57,11 @@ def aggregate_monitor_data(db: Session):
             )
             db.add(new_record)
 
-    # Определяем начало и конец текущего дня
+    # Determines the start and end of the current day.
     start_of_today = datetime(today.year, today.month, today.day, 0, 0, 0)
     end_of_today = start_of_today + timedelta(days=1) - timedelta(seconds=1)
 
-    # Обновление данных за сегодня
+    # Updates data for today.
     today_data = db.query(
         Monitor.site_id,
         func.count().label("total_checks"),
@@ -78,11 +77,11 @@ def aggregate_monitor_data(db: Session):
         total_checks = Decimal(data.total_checks or Decimal(0))
         successful_checks = Decimal(data.successful_checks or Decimal(0))
 
-        # Вычисляем uptime_percentage
+        # Calculate uptime_percentage
         uptime_percentage = (successful_checks * Decimal(100) / total_checks).quantize(Decimal('0.00')) \
             if total_checks > 0 else Decimal('0.00')
 
-        # Проверяем, существует ли запись за сегодня
+        # Checks if there is a record for today.
         existing_record = db.query(MonitorByDay).filter(
             and_(
                 MonitorByDay.site_id == data.site_id,
@@ -91,10 +90,10 @@ def aggregate_monitor_data(db: Session):
         ).first()
 
         if existing_record:
-            # Обновляем существующую запись
+            # Update
             existing_record.uptime = uptime_percentage
         else:
-            # Создаем новую запись
+            # Insert
             new_record = MonitorByDay(
                 site_id=data.site_id,
                 uptime=uptime_percentage,
@@ -102,5 +101,4 @@ def aggregate_monitor_data(db: Session):
             )
             db.add(new_record)
 
-    # Фиксируем изменения в базе данных
     db.commit()

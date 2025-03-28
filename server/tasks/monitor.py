@@ -1,4 +1,3 @@
-# server/tasks/monitor.py
 import requests
 from celery import Celery
 from db.session import SessionLocal
@@ -22,35 +21,45 @@ def check_site_availability():
     sites = db.query(Site).filter_by(is_active=True).all()
 
     for site in sites:
-        try:
-            start_time = time.time()
-            response = requests.get(site.url, timeout=10)
-            end_time = time.time()
+        def check_site():
+            try:
+                start_time = time.time()
+                response = requests.get(site.url, timeout=10)
+                end_time = time.time()
 
-            status_code = response.status_code
-            is_online = 200 <= status_code < 300
-            response_time_ms = round((end_time - start_time) * 1000)
-        except requests.exceptions.RequestException:
-            is_online = False
-            status_code = None
-            response_time_ms = None
+                check_status_code = response.status_code
+                check_is_online = 200 <= check_status_code < 300
+                check_response_time_ms = round((end_time - start_time) * 1000)
+            except requests.exceptions.RequestException:
+                check_is_online = False
+                check_status_code = None
+                check_response_time_ms = None
 
-        # Обновляем данные в таблице Site
+            return check_is_online, check_status_code, check_response_time_ms
+
+        is_online, status_code, response_time_ms = check_site()
+
+        # Check again, to be sure
+        if not is_online:
+            time.sleep(5)
+            is_online, status_code, response_time_ms = check_site()
+
+        # Updates the data in the Site table.
         site.last_checked = datetime.utcnow()
         db.add(site)
 
-        # Получаем последнюю запись мониторинга для сравнения
+        # Gets the last monitoring record for comparison.
         last_monitor_record = db.query(Monitor).filter_by(site_id=site.id).order_by(Monitor.check_dt.desc()).first()
         status_changed = False
 
         if last_monitor_record:
-            # Проверяем, изменился ли статус
+            # Checks if the status has changed.
             if last_monitor_record.is_ok != is_online:
                 status_changed = True
         elif not is_online:
             status_changed = True
 
-        # Создаем запись в таблице Monitor
+        # Creates a record in the Monitor table.
         monitor_record = Monitor(
             site_id=site.id,
             is_ok=is_online,
@@ -60,10 +69,10 @@ def check_site_availability():
         )
         db.add(monitor_record)
 
-        #свертка данных
+        # Aggregate data
         aggregate_monitor_data(db)
 
-        # Уведомления
+        # Notification
         if status_changed:
             noty_url = f'/site/{site.id}'
 
@@ -79,34 +88,29 @@ def check_site_availability():
                 notification = add_notification(db, user, message, noty_url, noty_title)
                 send_message(db, notification)
 
-    # Сохраняем все изменения в базу данных
     db.commit()
     db.close()
 
 def clean_up():
-    # Пороговое значение: записи старше этого периода будут удалены
+    # Threshold value: records older than this period will be deleted.
     retention_period_days = 7  # 7 дней
 
-    # Создаем сессию базы данных
     db: Session = SessionLocal()
 
     try:
-        # Вычисляем дату, до которой записи считаются "старыми"
+        # Calculates the date until which the records are considered "old."
         cutoff_date = datetime.utcnow() - timedelta(days=retention_period_days)
 
-        # Удаляем записи старше cutoff_date
+        # Deletes records older than the `cutoff_date`.
         deleted_count = db.query(Monitor).filter(
             Monitor.check_dt < cutoff_date
         ).delete()
 
-        # Фиксируем изменения в базе данных
         db.commit()
 
         print(f"Deleted {deleted_count} records from the Monitor table.")
     except Exception as e:
-        # В случае ошибки откатываем транзакцию
         db.rollback()
         print(f"An error occurred during cleanup: {e}")
     finally:
-        # Закрываем сессию
         db.close()

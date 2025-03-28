@@ -16,16 +16,12 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    # Для токенов (если используете stateless JWT, эти поля могут не понадобиться)
-    token = Column(String(255), unique=True)
-    token_expires = Column(DateTime(timezone=True))
-
-    # Связь с таблицей sites
+    # Connection with sites
     sites = relationship("Site", back_populates="owner")
 
     notification_auth = relationship("NotificationAuth", back_populates="owner")
 
-    # Методы для работы с паролями
+    # Methods for working with passwords.
     def verify_password(self, password: str) -> bool:
         return pwd_context.verify(password, self.hashed_password)
 

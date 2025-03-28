@@ -1,9 +1,6 @@
 # main.py
 from fastapi.middleware.cors import CORSMiddleware
-from core.config import settings
 from fastapi import FastAPI, Depends, HTTPException, status, APIRouter
-from fastapi.security import OAuth2PasswordRequestForm
-from api.auth import oauth2_scheme
 from pydantic import BaseModel
 from db.session import get_db, Base, engine
 from db.crud import authenticate_user, create_access_token
@@ -14,9 +11,8 @@ from services.notification_providers.telegram import handle_telegram_webhook
 from pwa.pwa_manager import PwaManager
 from contextlib import asynccontextmanager
 
-# Создаем таблицы в базе данных при запуске приложения
+# Creates the tables in the database when the application starts.
 Base.metadata.create_all(bind=engine)
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -24,27 +20,26 @@ async def lifespan(app: FastAPI):
     yield
 
 
-# Создаём экземпляр FastAPI
+# Creates an instance of FastAPI.
 app = FastAPI(
     title="Site Monitoring API",
-    description="API для мониторинга сайтов и SSL-сертификатов",
+    description="API for website and SSL certificate monitoring.",
     version="1.0.0",
     lifespan=lifespan
 )
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Разрешаем все источники
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Подключаем маршруты
 from api.routes import router as api_router
 app.include_router(api_router, prefix="/api")
 
-# Добавляем базовый маршрут для проверки работоспособности
+# Adds a basic route to check if the API is working.
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the Site Monitoring API"}
@@ -74,28 +69,28 @@ async def login(
 
 @app.post("/telegram/webhook/{webhook_hash}")
 async def telegram_webhook(
-        webhook_hash: str,  # Параметр пути для хэша
+        webhook_hash: str,
         request: Request,
         db: Session = Depends(get_db)
 ):
     """
-    Роут для приема вебхуков от Telegram.
-    Проверяет, соответствует ли переданный hash ожидаемому значению.
+    Route for receiving webhooks from Telegram.
+    Checks if the provided hash matches the expected value.
     """
-    # Получаем ожидаемый hash
+    # expected hash
     expected_hash = NotificationAuth.get_telegram_webhook_url_hash()
 
     if not expected_hash:
         raise HTTPException(status_code=404, detail="Page not found")
 
-    # Проверяем, совпадает ли переданный hash с ожидаемым
+    # Checks if the provided hash matches the expected one.
     if webhook_hash != expected_hash:
         raise HTTPException(status_code=404, detail="Page not found")
 
-    # Получаем данные из запроса
+    # Gets the data from the request.
     data = await request.json()
 
-    # Передаем данные в метод обработки вебхука
+    # Passes the data to the webhook handling method.
     response = handle_telegram_webhook(db, data)
 
     return response

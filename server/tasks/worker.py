@@ -1,8 +1,8 @@
-# server/tasks/worker.py
 from celery import Celery
 from core.config import settings
-from .monitor import check_site_availability
+from .monitor import check_site_availability, clean_up
 from .ssl_checker import check_ssl_certificates
+
 
 celery_app = Celery(
     "worker",

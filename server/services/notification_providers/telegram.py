@@ -1,5 +1,3 @@
-from pyexpat.errors import messages
-
 import requests
 from core.config import settings
 from models.notification import Notification
@@ -41,10 +39,8 @@ def send_telegram_notification(db: Session, notification: Notification):
     if notification.title:
         message = f"<b>{notification.title}</b>\n{message}"
 
-
     #if notification.url:
     #    message = f"{message}\n\n<a href='{notification.url}'>More info</a>"
-
 
     return send_message(chat_id, message)
 
@@ -59,53 +55,52 @@ def set_telegram_webhook():
 
     webhook_url = f"{settings.SERVER_HOST}/telegram/webhook/{NotificationAuth.get_telegram_webhook_url_hash()}"
 
-    # Формируем URL для запроса к Telegram API
+    # Forms the URL for the request to the Telegram API.
     telegram_api_url = f"https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/setWebhook"
 
-    # Данные для отправки в Telegram API
+    # Data to be sent to the Telegram API.
     payload = {
         "url": webhook_url,
     }
 
-    # Отправляем POST-запрос для установки вебхука
+    # Sends a POST request to set the webhook.
     response = requests.post(telegram_api_url, json=payload)
 
     # Проверяем статус ответа
     if response.status_code == 200 and response.json().get("ok"):
-        print("Webhook успешно установлен:", webhook_url)
+        print("Webhook successfully set:", webhook_url)
         return True
     else:
-        print("Ошибка при установке вебхука:", response.text)
+        print("Error setting the webhook:", response.text)
         return False
 
 
 def handle_telegram_webhook(db, data):
     """
-        Обработка входящих данных от Telegram.
-        """
-    # Извлекаем информацию о сообщении
+    Processing incoming data from Telegram.
+    """
+    # Extracts information about the message.
     message = data.get("message")
     if not message:
-        print("Нет данных о сообщении.")
+        print("No data about the message.")
         return {"status": "error", "message": "No message data"}
 
-    # Извлекаем текст сообщения
+    # Extracts the message text.
     text = message.get("text")
     if not text:
-        print("Сообщение не содержит текста.")
+        print("The message does not contain text.")
         return {"status": "error", "message": "No text in message"}
 
     chat_id = message.get('chat').get('id')
 
-    # Разделяем команду и данные
+    # Splits the command and data.
     parts = text.split(maxsplit=1)
     command = parts[0]  # Команда (например, "/auth")
     data = parts[1] if len(parts) > 1 else None  # Дополнительные данные (если есть)
 
-    # Обработка команды
+    # Processing the command.
     if command == "/auth":
         if data:
-            print(f"Получен код авторизации: {data}")
             user_id = NotificationAuth.check_telegram_auth_code(data)
 
             if user_id:
@@ -121,11 +116,11 @@ def handle_telegram_webhook(db, data):
                 send_message(chat_id, message)
                 return {'status':"error", "message":message}
         else:
-            print("Команда /auth без данных.")
+            print("Command /auth without any data.")
     elif command == "/start":
-        print("Пользователь запустил бота.")
+        print("User started the bot.")
 
     else:
-        print(f"Неизвестная команда: {command}")
+        print(f"Unknown command: {command}")
 
     return {"status": "success", "message": "Webhook processed"}

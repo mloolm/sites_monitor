@@ -51,10 +51,10 @@ def get_sites(db: Session, user: User):
 def delete_site(db: Session, user: User, site_id: int):
     site = get_site(db, user, site_id)
     if site:
-        db.delete(site)  # Удалить
-        db.commit()  # Подтвердить изменения
+        db.delete(site)
+        db.commit()
         return True
-    return False  # Если сайт не найден
+    return False
 
 def get_user_noty_providers(db: Session, user: User):
     providers = db.query(NotificationAuth).filter(NotificationAuth.user_id == user.id).all()

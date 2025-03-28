@@ -1,8 +1,6 @@
 import random
 import string
 import redis
-from db.session import get_db
-from sqlalchemy.orm import Session
 from core.config import settings
 from db.session import Base
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, func, Enum, ForeignKey, Text
@@ -28,20 +26,19 @@ class NotificationAuth(Base):
     @classmethod
     def get_telegram_auth_code(cls, user_id: int) -> str:
         """
-        Генерирует случайный код, сохраняет его в Redis и возвращает.
+        Generates a random code, saves it in Redis, and returns it.
         """
         ttl = 60 * 10  # 15 минут
-        # Генерируем случайный 6-значный код
+        # Generates a random 6-digit code.
         auth_code = "".join(random.choices(string.ascii_letters + string.digits, k=6))
 
-        # Сохраняем в Redis
+        # Saves it in Redis.
         redis_client.setex(auth_code, ttl, user_id)
 
         return auth_code
 
     @classmethod
     def check_telegram_auth_code(cls, code:string):
-
 
         existing_code_for_user = redis_client.get(code)
         if not existing_code_for_user:
