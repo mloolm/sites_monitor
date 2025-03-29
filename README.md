@@ -29,8 +29,8 @@ Follow these steps to set up the service:
    Download this repository to your local machine.
 
    ```bash
-   git clone <repository-url>
-   cd <repository-directory>
+   git clone https://github.com/mloolm/sites_monitor
+   cd sites_monitor
    ```
 
 3. **Build the Docker Containers**:
@@ -74,10 +74,10 @@ Contributions are welcome! Please feel free to submit a pull request or open an 
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License
 
 ## Contact
 
-For any inquiries or support, please reach out to [your-email@example.com].
+For any inquiries or support, please reach out to [krasheninin.p.a@gmail.com].
 ```
 
