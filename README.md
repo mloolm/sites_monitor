@@ -1,6 +1,3 @@
-Here's a professional README.md template for your GitHub repository based on the provided service description:
-
-```markdown
 # Website Monitoring and Analysis Service
 
 This service provides regular monitoring and analysis of websites, ensuring their availability and security through various features.
