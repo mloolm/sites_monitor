@@ -1,0 +1,37 @@
+# Основные зависимости
+fastapi
+uvicorn
+sqlalchemy
+pymysql
+alembic
+celery
+redis
+pydantic
+requests
+python-dotenv
+loguru
+pydantic-settings
+python-jose[cryptography]
+passlib[bcrypt]
+python-dotenv
+
+# Для работы с SSL сертификатами
+cryptography
+
+# Для мониторинга Celery (опционально)
+flower
+
+# Тестирование
+pytest
+pytest-asyncio
+httpx
+
+# Для работы с датами
+python-dateutil
+pytz
+
+# Дополнительно
+python-multipart
+pywebpush
+ecdsa
+py-vapid

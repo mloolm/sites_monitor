@@ -1,0 +1,128 @@
+#version: '3.8'
+
+services:
+  db:
+    image: mysql:8
+    restart: always
+    container_name: mdb
+    environment:
+      MYSQL_MULTIPLE_DATABASES: ${DB_DATABASE},test_${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: MYSQL_RANDOM_ROOT_PASSWORD
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./init-scripts:/docker-entrypoint-initdb.d
+      - mysql_data:/var/lib/mysql
+
+  redis:
+    image: redis:7
+    restart: always
+    container_name: mredis
+    ports:
+      - "6379:6379"
+
+  backend:
+    container_name: mback
+    build:
+      context: ./server
+      args:
+        STAGE: ${STAGE}
+    restart: always
+    depends_on:
+      - db
+      - redis
+    environment:
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_DATABASE: ${DB_DATABASE}
+      STAGE: ${STAGE}
+      SECRET_KEY: ${SECRET_KEY}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      CLAIMS_EMAIL: ${CLAIMS_EMAIL}
+
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./server:/app
+      - ./.env:/app/.env
+    command: >
+      sh -c "./wait_db.sh"
+
+  celery_worker:
+    container_name: mcelery_worker
+    build:
+      context: ./server
+      args:
+        STAGE: ${STAGE}
+    restart: always
+    depends_on:
+      - backend
+      - redis
+    environment:
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_DATABASE: ${DB_DATABASE}
+      STAGE: ${STAGE}
+      SECRET_KEY: ${SECRET_KEY}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      CLAIMS_EMAIL: ${CLAIMS_EMAIL}
+    volumes:
+      - ./server:/app
+      - ./.env:/app/.env
+    command: ["celery", "-A", "tasks.worker", "worker", "--loglevel=info"]
+
+  celery_beat:
+    container_name: mcelery_beat
+    build:
+      context: ./server
+      args:
+        STAGE: ${STAGE}
+    restart: always
+    depends_on:
+      - backend
+      - redis
+    environment:
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_DATABASE: ${DB_DATABASE}
+      STAGE: ${STAGE}
+      SECRET_KEY: ${SECRET_KEY}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      CLAIMS_EMAIL: ${CLAIMS_EMAIL}
+    volumes:
+      - ./server:/app
+      - ./.env:/app/.env
+    command: ["celery", "-A", "tasks.worker", "beat", "--loglevel=info"]
+
+  frontend:
+    container_name: mfront
+    build:
+      context: ./client
+      target: ${STAGE:-dev}
+    ports:
+      - "5173:5173"
+    environment:
+      STAGE: ${STAGE}
+      VITE_API_URL: http://backend:8000
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: mphpmyadmin
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: password
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+
+volumes:
+  mysql_data:
