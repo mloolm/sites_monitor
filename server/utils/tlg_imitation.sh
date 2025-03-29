@@ -1,9 +1,8 @@
 #!/bin/bash
-
-# Адрес вебхука
+#Fake request from Telegram for debugging
+# (insert the correct URL, for this, debug it in main.py - @app.post("/telegram/webhook/{webhook_hash}")).
 WEBHOOK_URL="http://localhost:8000/telegram/webhook/be0cd23cc966550b9cdb34dc31e2e1b69fece2b8df4f29178aef4d42a22ac45d"
 
-# Данные для отправки (JSON)
 PAYLOAD='{
   "update_id": 123456789,
   "message": {
@@ -28,7 +27,6 @@ PAYLOAD='{
   }
 }'
 
-# Отправка POST-запроса через curl
 curl -X POST "$WEBHOOK_URL" \
      -H "Content-Type: application/json" \
      -d "$PAYLOAD"
