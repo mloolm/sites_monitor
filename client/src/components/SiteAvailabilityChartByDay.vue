@@ -59,7 +59,6 @@ const chartOptions = {
   }
 };
 
-
 const chartData = ref({
   labels: [],
   datasets: [
@@ -92,5 +91,5 @@ watch(
 </script>
 
 <style scoped>
-/* Ваши стили для графика */
+
 </style>

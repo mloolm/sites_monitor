@@ -1,6 +1,5 @@
 <template>
   <v-app>
-    <!-- Условное отображение меню -->
     <Menu v-if="showMenu" />
     <v-main>
       <router-view />
@@ -16,7 +15,7 @@ import Menu from './components/Menu.vue';
 const route = useRoute();
 const token = localStorage.getItem("token");
 
-// Вычисляемое свойство для определения, нужно ли показывать меню
+// Computed property to determine whether the menu should be displayed.
 const showMenu = computed(() => {
   return route.path !== '/login';
 });

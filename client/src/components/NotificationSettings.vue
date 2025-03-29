@@ -36,7 +36,7 @@
         </v-row>
       </v-card-text>
 
-      <!-- Блок с пояснением, если Telegram недоступен -->
+      <!-- Block with explanation if Telegram is unavailable -->
       <v-card-text v-else>
         <v-alert type="info" variant="outlined">
           Telegram notifications are not available. To enable notifications, you need to add the
@@ -95,10 +95,10 @@ import {useRouter} from 'vue-router';
 
 const router = useRouter();
 const message = ref("");
-const telegramToken = ref(""); // Переменная для хранения кода Telegram
-const isLoading = ref(false); // Для отображения состояния загрузки
-const errorMessage = ref(""); // Для отображения ошибок
-const tlgAvailable = ref(false); // Доступность Telegram
+const telegramToken = ref(""); // Variable to store the Telegram code.
+const isLoading = ref(false); // For displaying the loading state.
+const errorMessage = ref(""); // For displaying errors.
+const tlgAvailable = ref(false); // Telegram availability.
 const pushAvailable = ref(true);
 const token = localStorage.getItem("token");
 
@@ -136,25 +136,25 @@ async function subscribeToPush() {
   api.subscribePWA(token, JSON.stringify(subscription));
 }
 
-// Функция для получения кода Telegram
+// Function to get the Telegram code.
 function fetchTelegramToken() {
-  isLoading.value = true; // Начинаем загрузку
-  errorMessage.value = ""; // Очищаем сообщения об ошибках
+  isLoading.value = true;
+  errorMessage.value = "";
 
   try {
     api.getTelegramAuthCode(token).then((res) => {
       console.log(res.data);
-      telegramToken.value = '/auth ' + res.data; // Обновляем значение telegramToken
+      telegramToken.value = '/auth ' + res.data; // Updating the value of telegramToken.
     }).catch((err) => {
       console.error("Error getting auth code:", err);
       errorMessage.value = "Failed to fetch the code. Please try again.";
     }).finally(() => {
-      isLoading.value = false; // Завершаем загрузку
+      isLoading.value = false;
     });
   } catch (err) {
     console.error("Error getting auth code:", err);
     errorMessage.value = "An unexpected error occurred.";
-    isLoading.value = false; // Завершаем загрузку
+    isLoading.value = false;
   }
 }
 
@@ -167,7 +167,7 @@ onMounted(async () => {
   try {
     const response = await api.getUserData(token);
   } catch (err) {
-    console.error("Ошибка при получении данных пользователя:", err);
+    console.error("Error retrieving user data:", err);
     router.push("/login");
   }
 
@@ -188,7 +188,7 @@ onMounted(async () => {
       console.log('Providers', providers);
     }
   } catch (err) {
-    console.error("Ошибка при получении данных о провайдерах уведомлений:", err);
+    console.error("Error retrieving notification provider data:", err);
   }
 });
 </script>

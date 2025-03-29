@@ -1,6 +1,6 @@
 <template>
   <v-container class="login-form">
-    <h2 class="text-h4 mb-6 text-center">Вход</h2>
+    <h2 class="text-h4 mb-6 text-center">Login</h2>
     <v-form @submit.prevent="handleLogin" ref="form">
       <v-text-field
           v-model="username"
@@ -50,19 +50,19 @@ const isLoading = ref(false);
 const router = useRouter();
 
 
-// Ссылка на форму для проверки валидации
+// Link to the form for validation check
 const form = ref(null);
 
-// Правила валидации
+// Validation
 const rules = {
-  required: (value) => !!value || "Обязательное поле",
+  required: (value) => !!value || "Required field",
 };
 
-// Флаг валидности формы
+// Form validity flag
 const isFormValid = ref(true);
 
 async function handleLogin() {
-  // Проверяем валидность формы
+  // Checking the form's validity
   const valid = await form.value.validate();
   if (!valid) return;
 
@@ -70,10 +70,10 @@ async function handleLogin() {
   try {
     const response = await api.login(username.value, password.value);
     const token = response.data.access_token;
-    localStorage.setItem("token", token); // Сохраняем токен
-    router.push("/dashboard"); // Переходим на защищенную страницу
+    localStorage.setItem("token", token); // Save token
+    router.push("/dashboard"); // go to the basic page
   } catch (err) {
-    error.value = "Неверный логин или пароль";
+    error.value = "Invalid login or password";
   } finally {
     isLoading.value = false;
   }

@@ -58,23 +58,23 @@ export default {
     // Date formatting function
     const formatDate = (dateString) => {
       const date = new Date(dateString);
-      return date.toLocaleString(); // Форматируем дату в удобочитаемый вид
+      return date.toLocaleString(); // Formats the date into a human-readable format
     };
 
-    // Функция для получения уведомлений
+    // Function to get notifications
     const fetchNotificationList = async () => {
       try {
-        const response = await api.getNotices(token, current_page.value); // Вызов API с текущей страницей
-        notifications.value = response.data; // Сохраняем полученные уведомления
+        const response = await api.getNotices(token, current_page.value);
+        notifications.value = response.data;
       } catch (err) {
-        error.value = 'Ошибка при загрузке уведомлений.';
+        error.value = 'Error fetching notifications';
         console.error('Error fetching notifications:', err);
       } finally {
-        loading.value = false; // Снимаем флаг загрузки
+        loading.value = false;
       }
     };
 
-    // Функция для получения общего числа страниц
+    // Function to get the total number of pages
     const fetchTotalPages = async () => {
       try {
         const response = await api.getNoticesTotalPages(token);
@@ -84,20 +84,19 @@ export default {
       }
     };
 
-    // Функция для изменения страницы
+    // Function to change the page
     const changePage = (page) => {
-      if (page < 1 || page > total_pages.value) return; // Защита от некорректных значений
-      current_page.value = page; // Обновляем текущую страницу
-      fetchNotificationList(); // Загружаем уведомления для новой страницы
+      if (page < 1 || page > total_pages.value) return;
+      current_page.value = page;
+      fetchNotificationList(); // Loading notifications for the new page
     };
 
-    // Вызываем функции при монтировании компонента
+
     onMounted(() => {
       fetchNotificationList();
       fetchTotalPages();
     });
 
-    // Возвращаем реактивные переменные и методы
     return {
       notifications,
       loading,

@@ -19,38 +19,38 @@
 <script setup>
 import {computed, ref} from 'vue';
 import api from "../api";
-import {useSiteStore} from '../stores/siteStore'; // Импортируем хранилище
+import {useSiteStore} from '../stores/siteStore'; // import store
 
 const newSiteUrl = ref('');
 const token = localStorage.getItem("token");
-const siteStore = useSiteStore(); // Получаем доступ к хранилищу
+const siteStore = useSiteStore(); // Accessing the storage
 
 // Валидация URL
 const urlRules = {
-  required: (value) => !!value || 'URL обязателен',
+  required: (value) => !!value || 'URL is required',
   isValidUrl: (value) => {
     const urlPattern = /^(https?:\/\/)?([\w-]+\.)+[\w-]{2,}(\/.*)*$/;
-    return urlPattern.test(value) || 'Некорректный URL';
+    return urlPattern.test(value) || 'Invalid URL';
   },
 };
 
-// Вычисляемое свойство для проверки валидности URL
+// Computed property to check the validity of the URL
 const isUrlValid = computed(() => {
   return urlRules.required(newSiteUrl.value) === true && urlRules.isValidUrl(newSiteUrl.value) === true;
 });
 
 async function addSite() {
   try {
-    await api.addSite(token, newSiteUrl.value); // Добавляем сайт через API
-    newSiteUrl.value = ''; // Очистить поле ввода
-    // Обновляем список сайтов в хранилище
+    await api.addSite(token, newSiteUrl.value); // add site via API
+    newSiteUrl.value = '';
+    // Update site list in the store
     await siteStore.fetchSites(token);
   } catch (error) {
     if (error.status == 422) {
-      alert('Некорректный URL сайта');
+      alert('Invalid site URL');
     } else {
-      console.error('Ошибка при добавлении сайта:', error);
-      alert('Не удалось добавить сайт.');
+      console.error('Error adding the website:', error);
+      alert('Failed to add the website');
     }
   }
 }

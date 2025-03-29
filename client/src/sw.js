@@ -1,7 +1,7 @@
 import { precacheAndRoute } from 'workbox-precaching';
 
 self.addEventListener('push', (event) => {
-  console.log('New push-notice received');
+  //console.log('New push-notice received');
   if (!event.data) return;
 
   const data = event.data.json();

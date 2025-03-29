@@ -3,7 +3,7 @@
     <h3>Site Details</h3>
     <p class="mb-3"><b>{{ siteInfo.url }}</b></p>
 
-    <!-- Кнопки выбора периода -->
+    <!-- period buttons -->
     <v-btn-toggle v-model="period" mandatory class="mb-4">
       <v-btn value="day" @click="updatePeriod('day')">Day</v-btn>
       <v-btn value="week" @click="updatePeriod('week')">Week</v-btn>
@@ -30,7 +30,7 @@ const siteId = route.params.id;
 const availabilityData = ref([]);
 const siteInfo = ref({});
 
-const period = ref("day"); // Значение по умолчанию
+const period = ref("day"); // default period
 
 
 const token = localStorage.getItem("token");
@@ -48,7 +48,7 @@ const currentChartComponent = computed(() => {
   }
 });
 
-// Функция для получения данных о доступности сайта
+// Getting data on website availability.
 const fetchAvailabilityData = async () => {
   try {
     const response = await api.getSiteData(token, siteId, period.value);
@@ -59,7 +59,7 @@ const fetchAvailabilityData = async () => {
   }
 };
 
-// Обновление периода и повторный запрос данных
+// Updating the period and re-requesting data.
 const updatePeriod = (newPeriod) => {
   period.value = newPeriod;
   fetchAvailabilityData();

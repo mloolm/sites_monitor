@@ -86,7 +86,7 @@ const chartData = ref({
       borderColor: 'rgba(255, 99, 132, 1)',
       backgroundColor: 'rgba(255, 99, 132, 0.2)',
       fill: false,
-      yAxisID: 'y1', // Привязываем ко второй оси Y
+      yAxisID: 'y1', // Binding to the second Y axis.
     },
   ],
 });
@@ -107,10 +107,8 @@ watch(
     },
     {immediate: true}
 );
-
-
 </script>
 
 <style scoped>
-/* Ваши стили для графика */
+
 </style>

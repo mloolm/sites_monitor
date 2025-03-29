@@ -54,12 +54,12 @@
     </v-card>
   </v-container>
 
-  <!-- Диалоговое окно подтверждения -->
+  <!-- Confirmation dialog window -->
   <v-dialog v-model="deleteDialog" max-width="400">
     <v-card>
-      <v-card-title>Подтвердите удаление</v-card-title>
+      <v-card-title>Confirm deletion</v-card-title>
       <v-card-text>
-        Вы действительно хотите удалить сайт <strong>{{ siteToDelete?.url }}</strong>?
+        Are you sure you want to delete the website? <strong>{{ siteToDelete?.url }}</strong>?
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
@@ -80,7 +80,7 @@ import {useRouter} from "vue-router";
 const siteStore = useSiteStore(); // Получаем доступ к хранилищу
 const token = localStorage.getItem("token");
 const router = useRouter();
-// Состояния для диалога удаления
+// States for the delete dialog
 const deleteDialog = ref(false);
 const siteToDelete = ref(null);
 
@@ -88,19 +88,19 @@ onMounted(async () => {
   await siteStore.fetchSites(token);
 });
 
-// Открытие диалога удаления
+// Opening the delete dialog
 function openDeleteDialog(site) {
   siteToDelete.value = site;
   deleteDialog.value = true;
 }
 
-// Закрытие диалога удаления
+// Closing the delete dialog
 function closeDeleteDialog() {
-  siteToDelete.value = null; // Очищаем выбранный сайт
-  deleteDialog.value = false; // Закрываем диалог
+  siteToDelete.value = null;
+  deleteDialog.value = false;
 }
 
-// Подтверждение удаления
+// Confirming deletion
 async function confirmDelete() {
   try {
     if (siteToDelete.value) {
@@ -110,8 +110,8 @@ async function confirmDelete() {
 
     }
   } catch (error) {
-    console.error('Ошибка при удалении сайта:', error);
-    alert('Не удалось удалить сайт.');
+    console.error('Error deleting the website:', error);
+    alert('Failed to delete the website');
   }
 }
 
@@ -120,19 +120,18 @@ const getSSLClass = (ssl) => {
     return 'ssl-error';
   }
 
-  // Преобразуем ssl в дату, если это строка
+  // Converts SSL to a date if it is a string
   const sslDate = new Date(ssl);
   const currentDate = new Date();
 
-  // Рассчитываем разницу в днях
+  // Calculates the difference in days
   const diffTime = sslDate - currentDate;
   const diffDays = diffTime / (1000 * 3600 * 24);
 
-  // Если оставшиеся дни меньше недели
+  // If the remaining days are less than a week
   if (diffDays <= 7) {
     return 'ssl-warning';
   }
-
   return 'ssl-ok';
 };
 
@@ -146,7 +145,7 @@ const getHealthClass = (health) => {
   }
 };
 
-// Функция для перехода на страницу сайта
+// Function to navigate to the website's page
 const goToSite = (siteId) => {
   router.push(`/site/${siteId}`);
 };
