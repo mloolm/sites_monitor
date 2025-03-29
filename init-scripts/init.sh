@@ -40,7 +40,7 @@ if [ -n "$MYSQL_MULTIPLE_DATABASES" ]; then
     done
 
 
-    # Изменяем пользователя для использования caching_sha2_password
+    # Changing the user to use caching_sha2_password.
     alter_user $MYSQL_USER $MYSQL_PASSWORD
     echo "Multiple databases and grants created"
     show_created_databases
