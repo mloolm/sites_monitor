@@ -68,6 +68,15 @@ Follow these steps to set up the service:
 7. **Set Up SSL**:
    It is recommended to use Certbot for easy SSL configuration.
 
+## Roadmap
+
+- [x] Basic website monitoring
+- [x] SSL certificate checks
+- [x] Telegram notifications and push-notifications
+- [ ] Website analysis: broken link checking, slow-loading pages detection, heavy images identification  
+
+
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a pull request or open an issue for any enhancements or bug fixes.
