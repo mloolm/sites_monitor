@@ -5,6 +5,13 @@ from models.monitor import Monitor
 from models.monitor_by_days import MonitorByDay
 from decimal import Decimal
 
+def get_last_processed_day(db, site_id):
+    return db.query(
+            func.max(func.date(MonitorByDay.check_dt))
+        ).filter(
+            MonitorByDay.site_id == site_id
+        ).scalar()
+
 def aggregate_monitor_data(db: Session):
     today = datetime.utcnow().date()
 
@@ -15,11 +22,7 @@ def aggregate_monitor_data(db: Session):
         site_id = site.site_id
 
         # Determines the last processed day from the monitor_by_day table.
-        last_processed_day = db.query(
-            func.max(func.date(MonitorByDay.check_dt))
-        ).filter(
-            MonitorByDay.site_id == site_id
-        ).scalar()
+        last_processed_day = get_last_processed_day(db, site_id)
 
         # If there are no processed days, take the earliest date from the monitor table.
         if not last_processed_day:
@@ -78,8 +81,10 @@ def aggregate_monitor_data(db: Session):
         successful_checks = Decimal(data.successful_checks or Decimal(0))
 
         # Calculate uptime_percentage
-        uptime_percentage = (successful_checks * Decimal(100) / total_checks).quantize(Decimal('0.00')) \
-            if total_checks > 0 else Decimal('0.00')
+        if total_checks > 0:
+            uptime_percentage = (successful_checks * Decimal(100) / total_checks).quantize(Decimal('0.00'))
+        else:
+            uptime_percentage = Decimal('0.00')
 
         # Checks if there is a record for today.
         existing_record = db.query(MonitorByDay).filter(

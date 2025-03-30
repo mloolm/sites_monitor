@@ -8,6 +8,7 @@ from pywebpush import webpush, WebPushException
 from pwa.pwa_manager import PwaManager
 from db.notifications import get_user_notification_endpoints
 
+
 TELEGRAM_BOT_TOKEN = settings.TELEGRAM_BOT_TOKEN
 
 
@@ -19,6 +20,7 @@ def send_message(db: Session, notification: Notification):
     user_id = notification.user_id
 
     providers = get_user_notification_endpoints(db, user_id)
+
     notification_send = False
     if not providers:
         return False
@@ -32,6 +34,9 @@ def send_message(db: Session, notification: Notification):
 
         elif provider['provider'] == 'pwa':
             endpoint = json.loads(provider['endpoint'])
+
+            if not 'keys' in endpoint:
+                continue
 
             # Validate the endpoint structure
             if all(k in endpoint for k in ["endpoint", "keys"]) or not all(k in endpoint["keys"] for k in ["p256dh", "auth"]):
@@ -85,7 +90,8 @@ def send_message(db: Session, notification: Notification):
                             db.commit()
 
         else:
-            raise "BAD DATA"
+            #Bad data, can`t send this notice
+            continue
 
 
     if notification_send:
